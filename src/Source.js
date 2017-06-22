@@ -2,13 +2,16 @@ import d from 'd_js';
 import Option from './Option.js';
 import Group from './Group.js';
 
-export default class Result {
+export default class Source {
     constructor(data = [], settings = {}) {
         this.settings = settings;
         this.options = {};
         this.groups = {};
         this.load(data);
         this.isClosed = true;
+
+        this.element = d.parse('<ul></ul>');
+        (this.settings.parent || document.body).appendChild(this.element);
     }
 
     load(data) {
@@ -34,16 +37,7 @@ export default class Result {
         });
     }
 
-    render() {
-        this.element = d.parse('<ul></ul>');
-        (this.settings.parent || document.body).appendChild(this.element);
-    }
-
     refresh(query) {
-        if (!this.element) {
-            this.render();
-        }
-
         this.result = [];
         this.current = 0;
         this.data.forEach(opt => opt.refresh(this.element, query, this.result));
@@ -80,9 +74,17 @@ export default class Result {
         }
     }
 
-    getCurrentValue() {
+    getByElement(element) {
+        const item = this.result.find(item => item.element === element);
+
+        if (item) {
+            return item;
+        }
+    }
+
+    getCurrent() {
         if (this.result[this.current]) {
-            return this.result[this.current].value;
+            return this.result[this.current];
         }
     }
 

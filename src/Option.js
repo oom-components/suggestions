@@ -14,6 +14,10 @@ export default class Option {
     }
 
     render() {
+        if (this.settings.optionRender) {
+            return d.parse(`<li>${this.settings.optionRender(this)}</li>`);
+        }
+
         return d.parse(`<li>${this.label}</li>`);
     }
 

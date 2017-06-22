@@ -13,25 +13,43 @@
 
 <body>
 	<form>
-		<label>
-			Your favorite color: 
-			<input type="text" name="datalist" list="colors" id="search">
-		</label>
-		<datalist id="colors">
-			<optgroup label="RGB">
-				<option value="red">Red</option>
-				<option value="green">Green</option>
-				<option value="blue">Blue</option>
-			</optgroup>
-			<option value="pink">Pink</option>
-			<option value="yellow">Yellow</option>
-			<option value="violet">Violet</option>
-		</datalist>
+		<fieldset>
+			<legend>Example with datalist</legend>
 
-		<label>
-			Your favorite color: 
-			<input type="text" name="ajax" id="search-ajax">
-		</label>
+			<label>
+				Your favorite color: 
+				<input type="text" name="datalist" list="colors" id="input-datalist">
+			</label>
+
+			<datalist id="colors">
+				<optgroup label="RGB">
+					<option value="red">Red</option>
+					<option value="green">Green</option>
+					<option value="blue">Blue</option>
+				</optgroup>
+				<option value="pink">Pink</option>
+				<option value="yellow">Yellow</option>
+				<option value="violet">Violet</option>
+			</datalist>
+		</fieldset>
+
+		<fieldset>
+			<legend>Example with ajax</legend>
+			<label>
+				Your favorite color: 
+				<input type="text" name="ajax" id="input-ajax">
+			</label>
+			
+		</fieldset>
+
+		<fieldset>
+			<legend>Example with manual source</legend>
+			<label>
+				Your favorite color: 
+				<input type="text" name="ajax" id="input-manual">
+			</label>
+		</fieldset>
+
 		<button type="submit">Send</button>
 	</form>
 

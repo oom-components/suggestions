@@ -1,6 +1,7 @@
 import d from 'd_js';
-import Result from './Result.js';
-import AjaxResult from './AjaxResult.js';
+import Source from './Source.js';
+import AjaxSource from './AjaxSource.js';
+import DatalistSource from './DatalistSource.js';
 
 const keys = {
     40: 'ArrowDown',
@@ -9,34 +10,17 @@ const keys = {
     27: 'Escape'
 };
 
-export { Result };
-export { AjaxResult };
+export { Source, AjaxSource, DatalistSource };
 
 export class Suggestions {
-    constructor(element, result) {
+    constructor(element, source) {
+        this.events = {};
+        this.source = source;
         this.element = element;
-
-        if (result instanceof Result) {
-            this.result = result;
-        } else if (typeof result === 'object') {
-            this.result = new Result(result, element.parentElement);
-        } else if (element.getAttribute('list')) {
-            const listElement = element.ownerDocument.getElementById(
-                element.getAttribute('list')
-            );
-            this.result = new Result(
-                getAvailableOptions(listElement),
-                listElement.parentElement
-            );
-            d.remove(listElement);
-        } else {
-            throw new Error('Results not provided');
-        }
-
         this.element.setAttribute('autocomplete', 'off');
 
         d.on('input', this.element, event => {
-            this.result.refresh(this.element.value);
+            this.source.refresh(this.element.value);
         });
 
         d.on('keydown', this.element, event => {
@@ -44,28 +28,44 @@ export class Suggestions {
 
             switch (code) {
                 case 'ArrowDown':
-                    this.result.selectNext();
-                    event.preventDefault();
+                    if (!this.source.isClosed) {
+                        this.source.selectNext();
+                        event.preventDefault();
+                    }
                     break;
 
                 case 'ArrowUp':
-                    this.result.selectPrevious();
-                    event.preventDefault();
+                    if (!this.source.isClosed) {
+                        this.source.selectPrevious();
+                        event.preventDefault();
+                    }
                     break;
 
                 case 'Enter':
-                    const value = this.result.getCurrentValue();
+                    if (!this.source.isClosed) {
+                        const item = this.source.getCurrent();
 
-                    if (!this.result.isClosed) {
-                        this.element.value = value;
-                        this.result.close();
+                        this.element.value = item.value;
+                        this.trigger('select', [item]);
+                        this.source.close();
                         event.preventDefault();
                     }
                     break;
 
                 case 'Escape':
-                    this.result.close();
+                    this.source.close();
                     break;
+            }
+        });
+
+        const self = this;
+        d.delegate('click', this.source.element, 'li', function(event) {
+            const item = self.source.getByElement(this);
+
+            if (item) {
+                self.element.value = item.value;
+                self.trigger('select', [item]);
+                self.source.close();
             }
         });
     }
@@ -97,31 +97,4 @@ export class Suggestions {
             this.events[event].forEach(callback => callback.apply(this, args));
         }
     }
-}
-
-function getAvailableOptions(element) {
-    const data = [];
-
-    d.getAll({ optgroup: element }).forEach(optgroup => {
-        data.push({
-            label: optgroup.label,
-            options: d.getAll({ option: optgroup }).map(createItem)
-        });
-    });
-
-    d.getAll({ option: element }).forEach(option => {
-        if (option.parentElement.tagName !== 'OPTGROUP') {
-            data.push(createItem(option));
-        }
-    });
-
-    return data;
-}
-
-function createItem(option) {
-    const item = d.data(option, 'data') || {};
-    item.label = option.label;
-    item.value = option.value;
-
-    return item;
 }

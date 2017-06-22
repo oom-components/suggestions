@@ -1,7 +1,7 @@
 import d from 'd_js';
-import Result from './Result.js';
+import Source from './Source.js';
 
-export default class AjaxResult extends Result {
+export default class AjaxSource extends Source {
     constructor(endpoint, settings = {}) {
         super([], settings);
         this.endpoint = endpoint;
