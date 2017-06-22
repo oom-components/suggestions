@@ -126,11 +126,11 @@ const suggestions = new Suggestions(
 );
 ```
 
-All source settings have the following options:
+All sources have the following options:
 
 Name | Type | Description
 -----|------|------------
-**parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document` unless `DatalistSource` that uses the parent element of the `<datalist>` element.
+**parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document.body` unless `DatalistSource` that uses the parent element of the `<datalist>` element.
 **optionRender** | `function` | A function to customize the html of the options.
 
 Example:
