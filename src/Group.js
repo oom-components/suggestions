@@ -1,41 +1,39 @@
 import d from 'd_js';
-import Option from './Option.js';
 
 export default class Group {
-    constructor(label, data = [], settings = {}) {
-        this.label = label;
-        this.options = {};
-        this.groups = {};
-        this.settings = settings;
-        this.load(data);
+    constructor(data, settings) {
+        this.data = data;
+        this.label = settings.label ? data[settings.label] : data.label;
+
+        this.render = settings.render;
     }
 
-    load(data) {
-        this.data = data.map(item => {
-            if (this.options[item.value]) {
-                return this.options[item.value];
-            }
+    set render(render) {
+        let element;
 
-            return (this.options[item.value] = new Option(item, this.settings));
-        });
-    }
+        if (render) {
+            element = d.parse(`<li>${render(this)}</li>`);
+        } else {
+            element = d.parse(`<li><strong>${this.label}</strong></li>`);
+        }
 
-    render() {
-        const element = d.parse(`<li><strong>${this.label}</strong></li>`);
         const ul = d.parse('<ul></ul>');
         element.appendChild(ul);
 
-        return [element, ul];
+        this.element = [element, ul];
+    }
+
+    load(data) {
+        this.element[1].innerHTML = '';
+        this.data = data;
     }
 
     refresh(parent, query, selected) {
-        if (!this.element) {
-            this.element = this.render();
-        }
-
         const [element, ul] = this.element;
 
-        this.data.forEach(opt => opt.refresh(ul, query, selected));
+        this.data.forEach(suggestion =>
+            suggestion.refresh(ul, query, selected)
+        );
 
         if (ul.childElementCount) {
             if (element.parentElement !== parent) {

@@ -131,7 +131,12 @@ All sources have the following options:
 Name | Type | Description
 -----|------|------------
 **parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document.body` unless `DatalistSource` that uses the parent element of the `<datalist>` element.
-**optionRender** | `function` | A function to customize the html of the options.
+**suggestions.render** | `function` | A function to customize the html of each suggestion.
+**suggestions.search** | `function` | A function to generate the text used to filter the result.
+**suggestions.label** | `string` | The object key used to generate the label of the suggestion. By default is `label`.
+**suggestions.value** | `string` | The object key used to generate the value of the suggestion. By default is `value`.
+**group.render** | `function` | A function to customize the html of each group of suggestions.
+**group.label** | `string` | The object key used to generate the label of the group of suggestion. By default is `label`.
 
 Example:
 
@@ -142,8 +147,15 @@ const suggestions = new Suggestions(
     document.getElementById('my-input'),
     new AjaxSource('/api/suggestions', {
         parent: document.getElementById('suggestions-wrapper'),
-        optionRender: function (option) {
-            return `<strong>${option.label}</strong>`;
+        suggestions: {
+            label: 'title',
+            value: 'id',
+            search: function (option) {
+                return option.label + option.value + option.data.description;
+            },
+            render: function (option) {
+                return `<strong>${option.label}</strong>`;
+            }
         }
     })
 );

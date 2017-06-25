@@ -1,49 +1,69 @@
 import d from 'd_js';
-import Option from './Option.js';
+import Suggestion from './Suggestion.js';
 import Group from './Group.js';
 
 export default class Source {
     constructor(data = [], settings = {}) {
         this.settings = settings;
-        this.options = {};
+        this.settings.groups = this.settings.groups || {};
+        this.settings.suggestions = this.settings.suggestions || {};
+
+        this.suggestions = {};
         this.groups = {};
         this.load(data);
         this.isClosed = true;
 
-        this.element = d.parse('<ul></ul>');
+        this.element = this.render();
         (this.settings.parent || document.body).appendChild(this.element);
     }
 
+    render() {
+        return d.parse('<ul></ul>');
+    }
+
+    getSuggestion(item) {
+        if (this.suggestions[item.value]) {
+            return this.suggestions[item.value];
+        }
+
+        return (this.suggestions[item.value] = new Suggestion(
+            item,
+            this.settings.suggestions
+        ));
+    }
+
+    getGroup(item) {
+        if (!this.groups[item.label]) {
+            this.groups[item.label] = new Group(item, this.settings.groups);
+        }
+
+        this.groups[item.label].load(
+            item.options.map(item => this.getSuggestion(item))
+        );
+        return this.groups[item.label];
+    }
+
     load(data) {
-        this.data = data.map(item => {
-            if (item.options) {
-                if (!this.groups[item.label]) {
-                    return (this.groups[item.label] = new Group(
-                        item.label,
-                        item.options,
-                        this.settings
-                    ));
-                }
-
-                this.groups[item.label].load(item.options);
-                return this.groups[item.label];
-            }
-
-            if (this.options[item.value]) {
-                return this.options[item.value];
-            }
-
-            return (this.options[item.value] = new Option(item, this.settings));
-        });
+        this.data = data.map(
+            item =>
+                item.options ? this.getGroup(item) : this.getSuggestion(item)
+        );
     }
 
     refresh(query) {
+        this.element.innerHTML = '';
         this.result = [];
         this.current = 0;
-        this.data.forEach(opt => opt.refresh(this.element, query, this.result));
+
+        if (!query) {
+            return this.close();
+        }
+
+        this.data.forEach(suggestion =>
+            suggestion.refresh(this.element, query, this.result)
+        );
 
         if (this.result[this.current]) {
-            this.result.forEach(option => option.unselect());
             this.result[this.current].select();
             this.element.classList.add('is-open');
             this.isClosed = false;
