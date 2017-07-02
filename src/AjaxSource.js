@@ -3,7 +3,7 @@ import Source from './Source.js';
 
 export default class AjaxSource extends Source {
     constructor(endpoint, settings = {}) {
-        super([], settings);
+        super(settings);
         this.endpoint = endpoint;
         this.cache = {};
     }
@@ -22,7 +22,7 @@ export default class AjaxSource extends Source {
         if (this.cache[query]) {
             this.data = this.cache[query];
             delete this.query;
-            super.refresh(query);
+            this.update();
             return;
         }
 
@@ -36,7 +36,7 @@ export default class AjaxSource extends Source {
                 .then(data => {
                     this.load(data);
                     this.cache[query] = this.data;
-                    super.refresh(query);
+                    this.update();
 
                     clearTimeout(this.timeout);
                     delete this.timeout;
@@ -44,11 +44,30 @@ export default class AjaxSource extends Source {
                     if (this.query && query !== this.query) {
                         query = this.query;
                         delete this.query;
-                        return this.refresh(query);
+                        return this.update();
                     }
 
                     delete this.query;
                 });
         }, 200);
+    }
+
+    update() {
+        this.element.innerHTML = '';
+        this.result = [];
+        this.current = 0;
+
+        this.each((suggestion, parent) => {
+            suggestion.unselect();
+            parent.element.appendChild(suggestion.element);
+            this.result.push(suggestion);
+        });
+
+        if (this.result.length) {
+            this.selectFirst();
+            this.open();
+        } else {
+            this.close();
+        }
     }
 }

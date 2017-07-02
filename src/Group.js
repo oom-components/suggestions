@@ -1,31 +1,24 @@
 import d from 'd_js';
 
 export default class Group {
-    constructor(data, settings) {
+    constructor(data, settings = {}) {
         this.data = data;
         this.label = settings.label ? data[settings.label] : data.label;
 
-        this.render = settings.render;
-    }
-
-    set render(render) {
-        let element;
-
-        if (render) {
-            element = d.parse(`<li>${render(this)}</li>`);
-        } else {
-            element = d.parse(`<li><strong>${this.label}</strong></li>`);
-        }
-
-        const ul = d.parse('<ul></ul>');
-        element.appendChild(ul);
-
-        this.element = [element, ul];
+        this.element = d.parse('<ul></ul>');
+        this.wrapperElement = d.parse(
+            `<li><strong>${this.label}</strong></li>`
+        );
+        this.wrapperElement.appendChild(this.element);
     }
 
     load(data) {
-        this.element[1].innerHTML = '';
+        this.element.innerHTML = '';
         this.data = data;
+    }
+
+    append(child) {
+        this.element.appendChild(child);
     }
 
     refresh(parent, query, selected) {

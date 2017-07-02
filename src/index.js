@@ -1,5 +1,4 @@
 import d from 'd_js';
-import Source from './Source.js';
 import AjaxSource from './AjaxSource.js';
 import DatalistSource from './DatalistSource.js';
 
@@ -10,7 +9,7 @@ const keys = {
     27: 'Escape'
 };
 
-export { Source, AjaxSource, DatalistSource };
+export { AjaxSource, DatalistSource };
 
 export class Suggestions {
     constructor(element, source) {

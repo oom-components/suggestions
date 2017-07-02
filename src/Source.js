@@ -3,22 +3,19 @@ import Suggestion from './Suggestion.js';
 import Group from './Group.js';
 
 export default class Source {
-    constructor(data = [], settings = {}) {
+    constructor(settings = {}) {
         this.settings = settings;
         this.settings.groups = this.settings.groups || {};
         this.settings.suggestions = this.settings.suggestions || {};
 
         this.suggestions = {};
         this.groups = {};
-        this.load(data);
         this.isClosed = true;
+        this.result = [];
+        this.current = 0;
 
-        this.element = this.render();
+        this.element = d.parse('<ul></ul>');
         (this.settings.parent || document.body).appendChild(this.element);
-    }
-
-    render() {
-        return d.parse('<ul></ul>');
     }
 
     getSuggestion(item) {
@@ -50,25 +47,15 @@ export default class Source {
         );
     }
 
-    refresh(query) {
-        this.element.innerHTML = '';
-        this.result = [];
+    append(child) {
+        this.element.appendChild(child);
+    }
+
+    selectFirst() {
         this.current = 0;
 
-        if (!query) {
-            return this.close();
-        }
-
-        this.data.forEach(suggestion =>
-            suggestion.refresh(this.element, query, this.result)
-        );
-
         if (this.result[this.current]) {
-            this.result[this.current].select();
-            this.element.classList.add('is-open');
-            this.isClosed = false;
-        } else {
-            this.close();
+            this.result[this.current].select(this.element);
         }
     }
 
@@ -78,7 +65,7 @@ export default class Source {
             this.current++;
 
             if (this.result[this.current]) {
-                this.result[this.current].select();
+                this.result[this.current].select(this.element);
             }
         }
     }
@@ -89,7 +76,7 @@ export default class Source {
             this.current--;
 
             if (this.result[this.current]) {
-                this.result[this.current].select();
+                this.result[this.current].select(this.element);
             }
         }
     }
@@ -112,5 +99,32 @@ export default class Source {
         this.isClosed = true;
         this.element.innerHTML = '';
         this.element.classList.remove('is-open');
+    }
+
+    open() {
+        this.isClosed = false;
+        this.element.classList.add('is-open');
+    }
+
+    each(callback) {
+        this.data.forEach(suggestion => {
+            if (suggestion instanceof Group) {
+                suggestion.data.forEach(item => callback(item, suggestion));
+
+                if (suggestion.element.childElementCount) {
+                    if (
+                        suggestion.wrapperElement.parentElement !== this.element
+                    ) {
+                        this.element.appendChild(suggestion.wrapperElement);
+                    }
+                } else if (
+                    suggestion.wrapperElement.parentElement === this.element
+                ) {
+                    this.element.removeChild(suggestion.wrapperElement);
+                }
+            } else {
+                callback(suggestion, this);
+            }
+        });
     }
 }
