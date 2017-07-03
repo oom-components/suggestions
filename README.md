@@ -94,7 +94,6 @@ As you can see, the constructor of the class `Suggestions` needs two arguments: 
 
 * `DatalistSource`: Get the source from the `<datalist>` element associated to the input.
 * `AjaxSource`: Get the source from an ajax request returning a json with the data.
-* `Source`: To assign the data by yourself.
 
 Example with ajax:
 
@@ -107,35 +106,14 @@ const suggestions = new Suggestions(
 );
 ```
 
-Example assigning the data directly:
-
-```js
-import {Suggestions, Source} from 'pw-suggestions';
-
-const suggestions = new Suggestions(
-    document.getElementById('my-input'),
-    new Source([
-        {
-            label: 'Option 1',
-            value: 'option-1',
-        },{
-            label: 'Option 2',
-            value: 'option-2',
-        }
-    ])
-);
-```
-
 All sources have the following options:
 
 Name | Type | Description
 -----|------|------------
 **parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document.body` unless `DatalistSource` that uses the parent element of the `<datalist>` element.
 **suggestions.render** | `function` | A function to customize the html of each suggestion.
-**suggestions.search** | `function` | A function to generate the text used to filter the result.
 **suggestions.label** | `string` | The object key used to generate the label of the suggestion. By default is `label`.
 **suggestions.value** | `string` | The object key used to generate the value of the suggestion. By default is `value`.
-**group.render** | `function` | A function to customize the html of each group of suggestions.
 **group.label** | `string` | The object key used to generate the label of the group of suggestion. By default is `label`.
 
 Example:
