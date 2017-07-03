@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-* Do not filter the suggestions in ajaxSource, it's supossed to be filtered by the server. 
+* Do not filter the suggestions in ajaxSource, it's supossed to be filtered by the server.
 
 ### Fixed
 

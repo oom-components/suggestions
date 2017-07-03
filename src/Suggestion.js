@@ -41,7 +41,7 @@ export default class Suggestion {
         this.element.classList.add('is-selected');
 
         if (parentRect.top - rect.top > 0) {
-            this.element.scrollIntoView(true);
+            parent.scrollTop -= parentRect.top - rect.top;
         } else if (parentRect.bottom < rect.bottom) {
             this.element.scrollIntoView(false);
         }

@@ -27,16 +27,18 @@ export class Suggestions {
 
             switch (code) {
                 case 'ArrowDown':
+                    event.preventDefault();
+
                     if (!this.source.isClosed) {
                         this.source.selectNext();
-                        event.preventDefault();
                     }
                     break;
 
                 case 'ArrowUp':
+                    event.preventDefault();
+
                     if (!this.source.isClosed) {
                         this.source.selectPrevious();
-                        event.preventDefault();
                     }
                     break;
 
