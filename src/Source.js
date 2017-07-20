@@ -16,6 +16,12 @@ export default class Source {
 
         this.element = d.parse('<ul></ul>');
         (this.settings.parent || document.body).appendChild(this.element);
+
+        var self = this;
+
+        d.delegate('mouseenter', this.element, 'li', function(e, target) {
+            self.selectByElement(target);
+        });
     }
 
     getSuggestion(item) {
@@ -76,6 +82,18 @@ export default class Source {
             this.current--;
 
             if (this.result[this.current]) {
+                this.result[this.current].select(this.element);
+            }
+        }
+    }
+
+    selectByElement(element) {
+        if (this.result[this.current]) {
+            const key = this.result.findIndex(item => item.element === element);
+
+            if (key !== -1) {
+                this.result[this.current].unselect();
+                this.current = key;
                 this.result[this.current].select(this.element);
             }
         }
