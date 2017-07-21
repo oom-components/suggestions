@@ -1,8 +1,9 @@
 import d from 'd_js';
 
 export default class Suggestion {
-    constructor(data, settings = {}) {
+    constructor(data, settings = {}, group) {
         this.data = data;
+        this.group = group;
         this.value = settings.value ? data[settings.value] : data.value;
         this.label = settings.label
             ? data[settings.label]
@@ -34,17 +35,23 @@ export default class Suggestion {
         }
     }
 
-    select(parent) {
+    scroll(parent, scrollGroup) {
         const rect = this.element.getBoundingClientRect();
         const parentRect = parent.getBoundingClientRect();
-
-        this.element.classList.add('is-selected');
 
         if (parentRect.top - rect.top > 0) {
             parent.scrollTop -= parentRect.top - rect.top;
         } else if (parentRect.bottom < rect.bottom) {
             this.element.scrollIntoView(false);
         }
+
+        if (scrollGroup && this.group && !this.element.previousElementSibling) {
+            this.group.element.scrollIntoView(false);
+        }
+    }
+
+    select() {
+        this.element.classList.add('is-selected');
     }
 
     unselect() {

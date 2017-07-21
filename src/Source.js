@@ -24,14 +24,15 @@ export default class Source {
         });
     }
 
-    getSuggestion(item) {
+    getSuggestion(item, group) {
         if (this.suggestions[item.value]) {
             return this.suggestions[item.value];
         }
 
         return (this.suggestions[item.value] = new Suggestion(
             item,
-            this.settings.suggestions
+            this.settings.suggestions,
+            group
         ));
     }
 
@@ -40,10 +41,11 @@ export default class Source {
             this.groups[item.label] = new Group(item, this.settings.groups);
         }
 
-        this.groups[item.label].load(
-            item.options.map(item => this.getSuggestion(item))
-        );
-        return this.groups[item.label];
+        const group = this.groups[item.label];
+
+        group.load(item.options.map(item => this.getSuggestion(item, group)));
+
+        return group;
     }
 
     load(data) {
@@ -61,7 +63,7 @@ export default class Source {
         this.current = 0;
 
         if (this.result[this.current]) {
-            this.result[this.current].select(this.element);
+            this.result[this.current].select();
         }
     }
 
@@ -71,7 +73,8 @@ export default class Source {
             this.current++;
 
             if (this.result[this.current]) {
-                this.result[this.current].select(this.element);
+                this.result[this.current].select();
+                this.result[this.current].scroll(this.element);
             }
         }
     }
@@ -82,7 +85,8 @@ export default class Source {
             this.current--;
 
             if (this.result[this.current]) {
-                this.result[this.current].select(this.element);
+                this.result[this.current].select();
+                this.result[this.current].scroll(this.element, true);
             }
         }
     }
@@ -94,7 +98,7 @@ export default class Source {
             if (key !== -1) {
                 this.result[this.current].unselect();
                 this.current = key;
-                this.result[this.current].select(this.element);
+                this.result[this.current].select();
             }
         }
     }

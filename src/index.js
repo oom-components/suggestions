@@ -59,14 +59,13 @@ export class Suggestions {
             }
         });
 
-        const self = this;
-        d.delegate('click', this.source.element, 'li', function(event) {
-            const item = self.source.getByElement(this);
+        d.delegate('click', this.source.element, 'li', (e, target) => {
+            const item = this.source.getByElement(target);
 
             if (item) {
-                self.element.value = item.value;
-                self.trigger('select', [item]);
-                self.source.close();
+                this.element.value = item.value;
+                this.trigger('select', [item]);
+                this.source.close();
             }
         });
     }
