@@ -88,6 +88,10 @@ suggestions.on('select', callback1);
 suggestions.on('select');
 ```
 
+### destroy
+
+Unbind all event listener and restore the inputs to the previous state.
+
 ### The available sources
 
 As you can see, the constructor of the class `Suggestions` needs two arguments: the input and the source used to search and display the suggestions. There are different sources for different needs:

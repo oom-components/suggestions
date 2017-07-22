@@ -16,5 +16,3 @@ const suggestions = new Suggestions(
 suggestions.on('select', value => {
     console.log(value);
 });
-
-setTimeout(() => suggestions.destroy(), 5000);
