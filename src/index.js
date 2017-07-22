@@ -22,6 +22,12 @@ export class Suggestions {
             this.source.refresh(this.element.value);
         });
 
+        let currValue;
+
+        d.on('focus', this.element, event => {
+            currValue = this.element.value;
+        });
+
         d.on('keydown', this.element, event => {
             const code = event.code || keys[event.keyCode];
 
@@ -55,6 +61,7 @@ export class Suggestions {
 
                 case 'Escape':
                     this.source.close();
+                    this.element.value = currValue;
                     break;
             }
         });
