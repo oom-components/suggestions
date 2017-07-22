@@ -36,7 +36,7 @@ export default class Suggestion {
     }
 
     scroll(parent, scrollGroup) {
-        const rect = this.element.getBoundingClientRect();
+        let rect = this.element.getBoundingClientRect();
         const parentRect = parent.getBoundingClientRect();
 
         if (parentRect.top - rect.top > 0) {
@@ -46,7 +46,11 @@ export default class Suggestion {
         }
 
         if (scrollGroup && this.group && !this.element.previousElementSibling) {
-            this.group.element.scrollIntoView(false);
+            rect = this.group.wrapperElement.getBoundingClientRect();
+
+            if (parentRect.top - rect.top > 0) {
+                parent.scrollTop -= parentRect.top - rect.top;
+            }
         }
     }
 

@@ -27,13 +27,9 @@ export default class AjaxSource extends Source {
         }
 
         this.timeout = setTimeout(() => {
-            fetch(this.endpoint + '?q=' + query, {
-                headers: {
-                    Accept: 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
+            getJson(
+                this.endpoint + '?q=' + query,
+                data => {
                     this.load(data);
                     this.cache[query] = this.data;
                     this.update();
@@ -48,7 +44,8 @@ export default class AjaxSource extends Source {
                     }
 
                     delete this.query;
-                });
+                }
+            );
         }, 200);
     }
 
@@ -70,4 +67,22 @@ export default class AjaxSource extends Source {
             this.close();
         }
     }
+}
+
+
+function getJson(url, done) {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url, true);
+    request.setRequestHeader('Accept', 'application/json');
+
+    request.onload = () => {
+        if (request.status >= 200 && request.status < 400) {
+            done(JSON.parse(request.responseText));
+        } else {
+            console.error(request);
+        }
+    };
+
+    request.send();
 }
