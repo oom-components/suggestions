@@ -27,25 +27,22 @@ export default class AjaxSource extends Source {
         }
 
         this.timeout = setTimeout(() => {
-            getJson(
-                this.endpoint + '?q=' + query,
-                data => {
-                    this.load(data);
-                    this.cache[query] = this.data;
-                    this.update();
+            getJson(this.endpoint + '?q=' + query, data => {
+                this.load(data);
+                this.cache[query] = this.data;
+                this.update();
 
-                    clearTimeout(this.timeout);
-                    delete this.timeout;
+                clearTimeout(this.timeout);
+                delete this.timeout;
 
-                    if (this.query && query !== this.query) {
-                        query = this.query;
-                        delete this.query;
-                        return this.update();
-                    }
-
+                if (this.query && query !== this.query) {
+                    query = this.query;
                     delete this.query;
+                    return this.update();
                 }
-            );
+
+                delete this.query;
+            });
         }, 200);
     }
 
@@ -68,7 +65,6 @@ export default class AjaxSource extends Source {
         }
     }
 }
-
 
 function getJson(url, done) {
     const request = new XMLHttpRequest();
