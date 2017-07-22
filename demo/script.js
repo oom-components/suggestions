@@ -1,6 +1,5 @@
-import { Suggestions, Source, AjaxSource, DatalistSource } from '../src';
+import { Suggestions, DatalistSource } from '../src';
 
-//Datalist
 const datalistInput = document.getElementById('input-datalist');
 
 const suggestions = new Suggestions(
@@ -17,3 +16,5 @@ const suggestions = new Suggestions(
 suggestions.on('select', value => {
     console.log(value);
 });
+
+setTimeout(() => suggestions.destroy(), 5000);

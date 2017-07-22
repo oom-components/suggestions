@@ -104,4 +104,9 @@ export class Suggestions {
             this.events[event].forEach(callback => callback.apply(this, args));
         }
     }
+
+    destroy() {
+        d.off('input focus keydown', this.element);
+        this.source.destroy();
+    }
 }

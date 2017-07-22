@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.0 - 2017-07-22
+
+### Added
+
+* New method `.destroy()` to unbind all events and restore the input to the previous state.
+
+### Changed
+
+* The escape key not only closes the list of suggestions but also restore the previous value
+* Selected any element on mouseover (#1)
+
+### Fixed
+
+* Fixed scroll behaviour (#2)
+* Switch from `fetch` to `XMLHttpRequest` to fix cors problems in firefox + browsersync (#3)
+
 ## 0.2.0 - 2017-07-03
 
 ### Added

@@ -149,4 +149,8 @@ export default class Source {
             }
         });
     }
+
+    destroy() {
+        d.remove(this.element);
+    }
 }

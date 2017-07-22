@@ -4,17 +4,21 @@ import Suggestion from './Suggestion.js';
 import Group from './Group.js';
 
 export default class DatalistSource extends Source {
-    constructor(element, settings = {}) {
-        const listElement = element.ownerDocument.getElementById(
-            element.getAttribute('list')
+    constructor(input, settings = {}) {
+        const listElement = input.ownerDocument.getElementById(
+            input.getAttribute('list')
         );
-        element.removeAttribute('list');
 
         if (!settings.parent) {
             settings.parent = listElement.parentElement;
         }
 
         super(settings);
+
+        this.input = input;
+        this.listId = input.getAttribute('list');
+
+        input.removeAttribute('list');
 
         this.load(getAvailableOptions(listElement));
     }
@@ -54,6 +58,11 @@ export default class DatalistSource extends Source {
         } else {
             this.close();
         }
+    }
+
+    destroy() {
+        this.input.setAttribute('list', this.listId);
+        super.destroy();
     }
 }
 
