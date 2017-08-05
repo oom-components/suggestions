@@ -14,13 +14,11 @@ export default class Source {
         this.result = [];
         this.current = 0;
 
-        this.element = d.parse('<ul></ul>');
-        (this.settings.parent || document.body).appendChild(this.element);
+        this.element = document.createElement('ul');
+        (this.settings.parent || document.body).append(this.element);
 
-        var self = this;
-
-        d.delegate('mouseenter', this.element, 'li', function(e, target) {
-            self.selectByElement(target);
+        d.delegate('mouseenter', this.element, 'li', (e, target) => {
+            this.selectByElement(target);
         });
     }
 
@@ -142,7 +140,7 @@ export default class Source {
                 } else if (
                     suggestion.wrapperElement.parentElement === this.element
                 ) {
-                    this.element.removeChild(suggestion.wrapperElement);
+                    suggestion.wrapperElement.remove();
                 }
             } else {
                 callback(suggestion, this);
@@ -151,6 +149,6 @@ export default class Source {
     }
 
     destroy() {
-        d.remove(this.element);
+        this.element.remove();
     }
 }

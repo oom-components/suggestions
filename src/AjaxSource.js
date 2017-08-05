@@ -1,4 +1,3 @@
-import d from 'd_js';
 import Source from './Source.js';
 
 export default class AjaxSource extends Source {

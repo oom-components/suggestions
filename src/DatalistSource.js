@@ -48,7 +48,7 @@ export default class DatalistSource extends Source {
                 parent.element.appendChild(suggestion.element);
                 this.result.push(suggestion);
             } else if (suggestion.element.parentElement === parent.element) {
-                parent.element.removeChild(suggestion.element);
+                suggestion.element.remove();
             }
         });
 
@@ -70,9 +70,14 @@ function getAvailableOptions(element) {
     const data = [];
 
     d.getAll({ optgroup: element }).forEach(optgroup => {
+        const options = [];
+        d
+            .getAll({ option: optgroup })
+            .forEach(option => options.push(createItem(option)));
+
         data.push({
             label: optgroup.label,
-            options: d.getAll({ option: optgroup }).map(createItem)
+            options: options
         });
     });
 

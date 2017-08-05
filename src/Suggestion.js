@@ -1,5 +1,3 @@
-import d from 'd_js';
-
 export default class Suggestion {
     constructor(data, settings = {}, group) {
         this.data = data;
@@ -10,29 +8,29 @@ export default class Suggestion {
             : data.label || this.value;
 
         //Render
+        this.element = document.createElement('li');
+
         if (typeof settings.render === 'function') {
-            this.element = d.parse(`<li>${settings.render(this)}</li>`);
+            this.element.innerHTML = settings.render(this);
         } else {
-            this.element = d.parse(`<li>${this.data.label || this.value}</li>`);
+            this.element.innerHTML = this.data.label || this.value;
         }
     }
 
     refresh(parent, query, selected) {
         if (this.match(query)) {
-            parent.appendChild(this.element);
+            parent.append(this.element);
             this.unselect();
             selected.push(this);
         } else {
             if (this.element.parentElement === parent) {
-                parent.removeChild(this.element);
+                this.element.remove();
             }
         }
     }
 
     detach() {
-        if (this.element.parentElement) {
-            this.element.parentElement.removeChild(this.element);
-        }
+        this.element.remove();
     }
 
     scroll(parent, scrollGroup) {

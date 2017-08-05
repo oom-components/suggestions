@@ -1,15 +1,12 @@
-import d from 'd_js';
-
 export default class Group {
     constructor(data, settings = {}) {
         this.data = data;
         this.label = settings.label ? data[settings.label] : data.label;
 
-        this.element = d.parse('<ul></ul>');
-        this.wrapperElement = d.parse(
-            `<li><strong>${this.label}</strong></li>`
-        );
-        this.wrapperElement.appendChild(this.element);
+        this.element = document.createElement('ul');
+        this.wrapperElement = document.createElement('li');
+        this.wrapperElement.innerHTML = `<strong>${this.label}</strong>`;
+        this.wrapperElement.append(this.element);
     }
 
     load(data) {
@@ -18,7 +15,7 @@ export default class Group {
     }
 
     append(child) {
-        this.element.appendChild(child);
+        this.element.append(child);
     }
 
     refresh(parent, query, selected) {
@@ -30,10 +27,10 @@ export default class Group {
 
         if (ul.childElementCount) {
             if (element.parentElement !== parent) {
-                parent.appendChild(element);
+                parent.append(element);
             }
         } else if (element.parentElement === parent) {
-            parent.removeChild(element);
+            element.remove();
         }
     }
 }
