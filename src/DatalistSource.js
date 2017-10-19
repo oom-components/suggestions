@@ -23,43 +23,6 @@ export default class DatalistSource extends Source {
         this.load(getAvailableOptions(listElement));
     }
 
-    match(suggestion, query) {
-        return (
-            suggestion.label.toLowerCase().indexOf(query) !== -1 ||
-            suggestion.value.toLowerCase().indexOf(query) !== -1
-        );
-    }
-
-    refresh(query) {
-        this.element.innerHTML = '';
-        this.result = [];
-        this.current = 0;
-
-        if (!query) {
-            return this.close();
-        }
-
-        query = query.toLowerCase();
-
-        this.each((suggestion, parent) => {
-            suggestion.unselect();
-
-            if (this.match(suggestion, query)) {
-                parent.element.appendChild(suggestion.element);
-                this.result.push(suggestion);
-            } else if (suggestion.element.parentElement === parent.element) {
-                suggestion.element.remove();
-            }
-        });
-
-        if (this.result.length) {
-            this.selectFirst();
-            this.open();
-        } else {
-            this.close();
-        }
-    }
-
     destroy() {
         this.input.setAttribute('list', this.listId);
         super.destroy();

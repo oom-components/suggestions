@@ -44,25 +44,6 @@ export default class AjaxSource extends Source {
             });
         }, 200);
     }
-
-    update() {
-        this.element.innerHTML = '';
-        this.result = [];
-        this.current = 0;
-
-        this.each((suggestion, parent) => {
-            suggestion.unselect();
-            parent.element.appendChild(suggestion.element);
-            this.result.push(suggestion);
-        });
-
-        if (this.result.length) {
-            this.selectFirst();
-            this.open();
-        } else {
-            this.close();
-        }
-    }
 }
 
 function getJson(url, done) {

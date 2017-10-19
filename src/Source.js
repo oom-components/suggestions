@@ -148,6 +148,44 @@ export default class Source {
         });
     }
 
+    refresh(query) {
+        if (!query) {
+            return this.close();
+        }
+
+        query = query.toLowerCase();
+
+        this.update(
+            suggestion =>
+                suggestion.label.toLowerCase().indexOf(query) !== -1 ||
+                suggestion.value.toLowerCase().indexOf(query) !== -1
+        );
+    }
+
+    update(filter) {
+        this.element.innerHTML = '';
+        this.result = [];
+        this.current = 0;
+
+        this.each((suggestion, parent) => {
+            suggestion.unselect();
+
+            if (!filter || filter(suggestion)) {
+                parent.element.appendChild(suggestion.element);
+                this.result.push(suggestion);
+            } else if (suggestion.element.parentElement === parent.element) {
+                suggestion.element.remove();
+            }
+        });
+
+        if (this.result.length) {
+            this.selectFirst();
+            this.open();
+        } else {
+            this.close();
+        }
+    }
+
     destroy() {
         this.element.remove();
     }

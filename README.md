@@ -132,9 +132,6 @@ const suggestions = new Suggestions(
         suggestions: {
             label: 'title',
             value: 'id',
-            search: function (option) {
-                return option.label + option.value + option.data.description;
-            },
             render: function (option) {
                 return `<strong>${option.label}</strong>`;
             }
