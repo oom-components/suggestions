@@ -1,6 +1,7 @@
 import d from 'd_js';
 import AjaxSource from './AjaxSource.js';
 import DatalistSource from './DatalistSource.js';
+import Source from './Source.js';
 
 const keys = {
     40: 'ArrowDown',
@@ -9,7 +10,7 @@ const keys = {
     27: 'Escape'
 };
 
-export { AjaxSource, DatalistSource };
+export { AjaxSource, DatalistSource, Source };
 
 export class Suggestions {
     constructor(element, source) {

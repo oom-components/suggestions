@@ -1,6 +1,6 @@
 {
   "name": "pw-suggestions",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Javascript to provide autocomplete/suggestions in inputs",
   "main": "index.js",
   "scripts": {
