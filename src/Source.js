@@ -157,15 +157,15 @@ export default class Source {
 
         query = query.split(' ');
 
-        this.update(
-            suggestion => {
-                if (!suggestion.search) {
-                    suggestion.search = cleanString(suggestion.label + suggestion.value);
-                }
-
-                return query.every(q => suggestion.search.indexOf(q) !== -1);
+        this.update(suggestion => {
+            if (!suggestion.search) {
+                suggestion.search = cleanString(
+                    suggestion.label + suggestion.value
+                );
             }
-        );
+
+            return query.every(q => suggestion.search.indexOf(q) !== -1);
+        });
     }
 
     update(filter) {
@@ -197,14 +197,13 @@ export default class Source {
     }
 }
 
-
-function cleanString (str) {
+function cleanString(str) {
     const replace = {
         a: /á/gi,
         e: /é/gi,
         i: /í/gi,
         o: /ó/gi,
-        u: /ú/gi,
+        u: /ú/gi
     };
 
     str = str.toLowerCase();
@@ -213,5 +212,8 @@ function cleanString (str) {
         str = str.replace(replace[r], r);
     }
 
-    return str.replace(/[^\wñ\s]/gi, '').replace(/\s+/g, ' ').trim();
+    return str
+        .replace(/[^\wñ\s]/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
