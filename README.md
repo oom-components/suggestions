@@ -5,6 +5,7 @@ Javascript library to autocomplete/suggest values in inputs. It has the followin
 * Follows the progressive enhancement strategy: **if javascript fails, the web page keeps working**
 * Can get the values from `<datalist>` or ajax.
 * Support for `<optgroups>`.
+* Build with ES6.
 * No default CSS styles provided (yes, it's a feature).
 
 ## Install
