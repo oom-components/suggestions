@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.4.0 - 2017-10-27
+
+### Removed
+
+* ES2015 dist version has been removed. From now, this library is ES6 only. You must use Babel or other transpiler for old browsers compatibility.
+
+### Add
+
+* Allow to search words in different order
+
+### Changed
+
+* Removed non alphanumeric characters in the query.
+
 ## 0.3.3 - 2017-10-19
 
 ### Fixed

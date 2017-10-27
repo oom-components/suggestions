@@ -12,11 +12,10 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                exclude: path.join(__dirname, '../node_modules/'),
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['es2015']
+                        presets: ['env']
                     }
                 }
             }

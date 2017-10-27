@@ -149,16 +149,22 @@ export default class Source {
     }
 
     refresh(query) {
-        if (!query) {
+        query = cleanString(query);
+
+        if (!query.length) {
             return this.close();
         }
 
-        query = query.toLowerCase();
+        query = query.split(' ');
 
         this.update(
-            suggestion =>
-                suggestion.label.toLowerCase().indexOf(query) !== -1 ||
-                suggestion.value.toLowerCase().indexOf(query) !== -1
+            suggestion => {
+                if (!suggestion.search) {
+                    suggestion.search = cleanString(suggestion.label + suggestion.value);
+                }
+
+                return query.every(q => suggestion.search.indexOf(q) !== -1);
+            }
         );
     }
 
@@ -189,4 +195,23 @@ export default class Source {
     destroy() {
         this.element.remove();
     }
+}
+
+
+function cleanString (str) {
+    const replace = {
+        a: /á/gi,
+        e: /é/gi,
+        i: /í/gi,
+        o: /ó/gi,
+        u: /ú/gi,
+    };
+
+    str = str.toLowerCase();
+
+    for (let r in replace) {
+        str = str.replace(replace[r], r);
+    }
+
+    return str.replace(/[^\wñ\s]/gi, '').replace(/\s+/g, ' ').trim();
 }
