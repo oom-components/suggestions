@@ -5,9 +5,13 @@
 	<title>Suggestions</title>
 </head>
 <style type="text/css">
+	datalist + ul {
+		display: none;
+	}
 	ul.is-open {
 		height: 100px;
 		overflow-y: auto;
+		display: block;
 	}
 	ul .is-selected {
 		color: blue;
@@ -30,6 +34,7 @@
 			</label>
 
 			<datalist id="colors">
+				<option data-search="custom">This option use the data-search value</option>
 				<optgroup label="RGB">
 					<option value="red">Red</option>
 					<option value="green">Green</option>

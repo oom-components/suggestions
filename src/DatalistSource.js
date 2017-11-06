@@ -54,7 +54,7 @@ function getAvailableOptions(element) {
 }
 
 function createItem(option) {
-    const item = d.data(option, 'data') || {};
+    const item = d.data(option);
     item.label = option.label;
     item.value = option.value;
 

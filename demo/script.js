@@ -13,6 +13,6 @@ const suggestions = new Suggestions(
     })
 );
 
-suggestions.on('select', value => {
-    console.log(value);
+suggestions.on('select', function(value) {
+    datalistInput.value = this.query;
 });

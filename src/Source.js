@@ -117,7 +117,7 @@ export default class Source {
 
     close() {
         this.isClosed = true;
-        this.element.innerHTML = '';
+        //this.element.innerHTML = '';
         this.element.classList.remove('is-open');
     }
 
@@ -213,7 +213,7 @@ function cleanString(str) {
     }
 
     return str
-        .replace(/[^\wñ\s]/gi, '')
+        .replace(/[^\wñç\s]/gi, '')
         .replace(/\s+/g, ' ')
         .trim();
 }

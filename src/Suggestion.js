@@ -3,6 +3,7 @@ export default class Suggestion {
         this.data = data;
         this.group = group;
         this.value = settings.value ? data[settings.value] : data.value;
+        this.search = data.search;
         this.label = settings.label
             ? data[settings.label]
             : data.label || this.value;

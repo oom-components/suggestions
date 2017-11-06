@@ -18,9 +18,16 @@ export class Suggestions {
         this.source = source;
         this.element = element;
         this.element.setAttribute('autocomplete', 'off');
+        this.query = null;
 
         d.on('input', this.element, event => {
-            this.source.refresh(this.element.value);
+            this.query = this.element.value || null;
+
+            if (this.query) {
+                this.source.refresh(this.query);
+            } else {
+                this.source.close();
+            }
         });
 
         let currValue;
@@ -38,6 +45,8 @@ export class Suggestions {
 
                     if (!this.source.isClosed) {
                         this.source.selectNext();
+                    } else if (this.query) {
+                        this.source.open();
                     }
                     break;
 

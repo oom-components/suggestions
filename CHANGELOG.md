@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.5.0 - 2017-11-06
+
+### Added
+
+* New `search` property added to suggestions
+* New property `query` containing the latest query used
+
+### Changed
+
+* Do not remove the suggestions on close, in order to allow to reopen it again with the same result
+* On press the down arrow and the suggestions is closed but with result, reopen it again.
+
+### Fixed
+
+* Do not remove `ç` character in cleanString
+* Close suggestions if the input value is empty
+
 ## 0.4.1 - 2017-10-27
 
 ### Fixed
