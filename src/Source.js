@@ -23,11 +23,13 @@ export default class Source {
     }
 
     getSuggestion(item, group) {
-        if (this.suggestions[item.value]) {
-            return this.suggestions[item.value];
+        const key = item[this.settings.suggestions.value || 'value'];
+
+        if (this.suggestions[key]) {
+            return this.suggestions[key];
         }
 
-        return (this.suggestions[item.value] = new Suggestion(
+        return (this.suggestions[key] = new Suggestion(
             item,
             this.settings.suggestions,
             group
@@ -35,11 +37,13 @@ export default class Source {
     }
 
     getGroup(item) {
-        if (!this.groups[item.label]) {
-            this.groups[item.label] = new Group(item, this.settings.groups);
+        const key = item[this.settings.groups.label || 'label'];
+
+        if (!this.groups[key]) {
+            this.groups[key] = new Group(item, this.settings.groups);
         }
 
-        const group = this.groups[item.label];
+        const group = this.groups[key];
 
         group.load(item.options.map(item => this.getSuggestion(item, group)));
 

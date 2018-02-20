@@ -12,10 +12,11 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
+                exclude: path.join(__dirname, '../node_modules/'),
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['env']
+                        presets: ['@babel/preset-env']
                     }
                 }
             }

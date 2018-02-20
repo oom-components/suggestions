@@ -62,7 +62,7 @@ export class Suggestions {
                     if (!this.source.isClosed) {
                         const item = this.source.getCurrent();
 
-                        this.element.value = item.value;
+                        this.element.value = item.label;
                         this.trigger('select', [item]);
                         this.source.close();
                         event.preventDefault();
@@ -80,7 +80,7 @@ export class Suggestions {
             const item = this.source.getByElement(target);
 
             if (item) {
-                this.element.value = item.value;
+                this.element.value = item.label;
                 this.trigger('select', [item]);
                 this.source.close();
             }
