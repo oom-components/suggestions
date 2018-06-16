@@ -1,6 +1,109 @@
-import d from 'd_js';
-import Suggestion from './Suggestion.js';
-import Group from './Group.js';
+/**
+ * Class to manage an individual suggestion
+ */
+class Suggestion {
+    constructor(data, settings = {}, group) {
+        this.data = data;
+        this.group = group;
+        this.value = settings.value ? data[settings.value] : data.value;
+        this.search = data.search;
+        this.label = settings.label
+            ? data[settings.label]
+            : data.label || this.value;
+
+        //Render
+        this.element = document.createElement('li');
+
+        if (typeof settings.render === 'function') {
+            this.element.innerHTML = settings.render(this);
+        } else {
+            this.element.innerHTML = this.data.label || this.value;
+        }
+    }
+
+    refresh(parent, query, selected) {
+        if (this.match(query)) {
+            parent.append(this.element);
+            this.unselect();
+            selected.push(this);
+        } else {
+            if (this.element.parentElement === parent) {
+                this.element.remove();
+            }
+        }
+    }
+
+    detach() {
+        this.element.remove();
+    }
+
+    scroll(parent, scrollGroup) {
+        let rect = this.element.getBoundingClientRect();
+        const parentRect = parent.getBoundingClientRect();
+
+        if (parentRect.top - rect.top > 0) {
+            parent.scrollTop -= parentRect.top - rect.top;
+        } else if (parentRect.bottom < rect.bottom) {
+            this.element.scrollIntoView(false);
+        }
+
+        if (scrollGroup && this.group && !this.element.previousElementSibling) {
+            rect = this.group.wrapperElement.getBoundingClientRect();
+
+            if (parentRect.top - rect.top > 0) {
+                parent.scrollTop -= parentRect.top - rect.top;
+            }
+        }
+    }
+
+    select() {
+        this.element.classList.add('is-selected');
+    }
+
+    unselect() {
+        this.element.classList.remove('is-selected');
+    }
+}
+
+/**
+ * Class to group suggestions
+ */
+class Group {
+    constructor(data, settings = {}) {
+        this.data = data;
+        this.label = settings.label ? data[settings.label] : data.label;
+
+        this.element = document.createElement('ul');
+        this.wrapperElement = document.createElement('li');
+        this.wrapperElement.innerHTML = `<strong>${this.label}</strong>`;
+        this.wrapperElement.append(this.element);
+    }
+
+    load(data) {
+        this.element.innerHTML = '';
+        this.data = data;
+    }
+
+    append(child) {
+        this.element.append(child);
+    }
+
+    refresh(parent, query, selected) {
+        const [element, ul] = this.element;
+
+        this.data.forEach(suggestion =>
+            suggestion.refresh(ul, query, selected)
+        );
+
+        if (ul.childElementCount) {
+            if (element.parentElement !== parent) {
+                parent.append(element);
+            }
+        } else if (element.parentElement === parent) {
+            element.remove();
+        }
+    }
+}
 
 export default class Source {
     constructor(settings = {}) {
@@ -17,7 +120,7 @@ export default class Source {
         this.element = document.createElement('ul');
         (this.settings.parent || document.body).append(this.element);
 
-        d.delegate('mouseenter', this.element, 'li', (e, target) => {
+        delegate(this.element, 'mouseenter', 'li', (e, target) => {
             this.selectByElement(target);
         });
     }
@@ -220,4 +323,23 @@ function cleanString(str) {
         .replace(/[^\wñç\s]/gi, '')
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+function delegate(context, event, selector, callback) {
+    context.addEventListener(
+        event,
+        function(event) {
+            for (
+                let target = event.target;
+                target && target != this;
+                target = target.parentNode
+            ) {
+                if (target.matches(selector)) {
+                    callback.call(target, event, target);
+                    break;
+                }
+            }
+        },
+        true
+    );
 }

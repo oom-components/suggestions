@@ -1,16 +1,20 @@
 {
-  "name": "pw-suggestions",
-  "version": "0.5.1",
+  "name": "@oom/suggestions",
+  "version": "1.0.0",
   "description": "Javascript to provide autocomplete/suggestions in inputs",
-  "main": "src/index.js",
+  "files": [
+    "src/ajax-source.js",
+    "src/datalist-source.js",
+    "src/source.js",
+    "src/suggestions.js"
+  ],
   "scripts": {
-    "start": "webpack --config demo/webpack.config.js --watch & http-server demo -c-1",
-    "prettier": "prettier src/*.js demo/script.js --single-quote --tab-width 4 --write",
-    "gh-pages": "webpack --config demo/webpack.config.js && gh-pages -d demo"
+    "start": "http-server -c-1",
+    "prettier": "prettier src/*.js demo/*.js tests/*.js --single-quote --tab-width 4 --write"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/progressive-web-components/suggestions.git"
+    "url": "git+https://github.com/oom-components/suggestions.git"
   },
   "keywords": [
     "progressive",
@@ -23,18 +27,13 @@
   "author": "Oscar Otero <oom@oscarotero.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/progressive-web-components/suggestions/issues"
+    "url": "https://github.com/oom-components/suggestions/issues"
   },
-  "homepage": "https://github.com/progressive-web-components/suggestions#readme",
+  "homepage": "https://github.com/oom-components/suggestions#readme",
   "devDependencies": {
-    "@babel/core": "^7.0.0-beta.32",
-    "@babel/preset-env": "^7.0.0-beta.32",
-    "babel-loader": "8.0.0-beta.0",
-    "gh-pages": "^1.0.0",
-    "prettier": "^1.4.1",
-    "webpack": "^3.0.0"
-  },
-  "dependencies": {
-    "d_js": "^2.2.0"
+    "chai": "^4.1.2",
+    "gh-pages": "^1.2.0",
+    "mocha": "^5.2.0",
+    "prettier": "^1.13.5"
   }
 }

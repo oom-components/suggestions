@@ -1,4 +1,5 @@
-import { Suggestions, DatalistSource } from '../src';
+import Suggestions from '../src/suggestions.js';
+import DatalistSource from '../src/datalist-source.js';
 
 const datalistInput = document.getElementById('input-datalist');
 
@@ -14,5 +15,5 @@ const suggestions = new Suggestions(
 );
 
 suggestions.on('select', function(value) {
-    datalistInput.value = this.query;
+    console.log(this.query, value);
 });

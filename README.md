@@ -3,7 +3,7 @@
 Javascript library to autocomplete/suggest values in inputs. It has the following features:
 
 * Follows the progressive enhancement strategy: **if javascript fails, the web page keeps working**
-* Can get the values from `<datalist>` or ajax.
+* Can get the values from javascript objects,  `<datalist>` elements or ajax.
 * Support for `<optgroups>`.
 * Build with ES6.
 * No default CSS styles provided (yes, it's a feature).
@@ -12,11 +12,10 @@ Javascript library to autocomplete/suggest values in inputs. It has the followin
 
 Requirements:
 
-* NPM or Yarn to install [the package and the dependencies](https://www.npmjs.com/package/pw-suggestions)
-* Webpack (or any other javascript loader)
+* NPM or Yarn to install [the package](https://www.npmjs.com/package/@oom/suggestions)
 
 ```sh
-npm install pw-suggestions
+npm install @oom/suggestions
 ```
 
 ## Usage
@@ -44,7 +43,8 @@ Let's start with the following html code:
 Use javascript for a complete experience:
 
 ```js
-import {Suggestions, DatalistSource} from 'pw-suggestions';
+import Suggestions from './suggestions.js';
+import DatalistSource from './datalist-source.js';
 
 //Get the input
 const input = document.getElementById('name-input');
@@ -97,13 +97,15 @@ Unbind all event listener and restore the inputs to the previous state.
 
 As you can see, the constructor of the class `Suggestions` needs two arguments: the input and the source used to search and display the suggestions. There are different sources for different needs:
 
+* `Source`: The base class extended by other sources. It can be used to load the sources from javascript objects.
 * `DatalistSource`: Get the source from the `<datalist>` element associated to the input.
 * `AjaxSource`: Get the source from an ajax request returning a json with the data.
 
 Example with ajax:
 
 ```js
-import {Suggestions, AjaxSource} from 'pw-suggestions';
+import Suggestions from './suggestions.js';
+import AjaxSource from './ajax-source.js';
 
 const suggestions = new Suggestions(
     document.getElementById('my-input'),
@@ -115,7 +117,7 @@ All sources have the following options:
 
 Name | Type | Description
 -----|------|------------
-**parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document.body` unless `DatalistSource` that uses the parent element of the `<datalist>` element.
+**parent** | `Node` | The parent node in which the suggestions are inserted in the DOM. By default is `document.body` for all sources but `DatalistSource` that uses the parent element of the `<datalist>` element.
 **suggestions.render** | `function` | A function to customize the html of each suggestion.
 **suggestions.label** | `string` | The object key used to generate the label of the suggestion. By default is `label`.
 **suggestions.value** | `string` | The object key used to generate the value of the suggestion. By default is `value`.
@@ -124,7 +126,8 @@ Name | Type | Description
 Example:
 
 ```js
-import {Suggestions, AjaxSource} from 'pw-suggestions';
+import Suggestions from './suggestions.js';
+import AjaxSource from './ajax-source.js';
 
 const suggestions = new Suggestions(
     document.getElementById('my-input'),
@@ -150,4 +153,7 @@ npm install
 npm start
 ```
 
-You should see something in `http://localhost:8080/`
+You should see something in the following urls:
+
+- Demo: `http://localhost:8080/demo`
+- Test: `http://localhost:8080/test`

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## UNRELEASED
+
+### Changed
+
+- Rename package to `@oom/suggestions`
+- The `package.json` is now more browser-friendly using `browser` and `files` keys
+- Browser tests
+
+### Removed
+
+- Webpack & babel tools. This package should work as native ES6 modules. Progressive enhancement strategy should fallback to css and html for old browsers.
+
 ## [0.5.1] - 2018-02-20
 
 ### Fixed

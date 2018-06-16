@@ -1,8 +1,3 @@
-import d from 'd_js';
-import AjaxSource from './AjaxSource.js';
-import DatalistSource from './DatalistSource.js';
-import Source from './Source.js';
-
 const keys = {
     40: 'ArrowDown',
     38: 'ArrowUp',
@@ -10,9 +5,7 @@ const keys = {
     27: 'Escape'
 };
 
-export { AjaxSource, DatalistSource, Source };
-
-export class Suggestions {
+export default class Suggestions {
     constructor(element, source) {
         this.events = {};
         this.source = source;
@@ -20,7 +13,7 @@ export class Suggestions {
         this.element.setAttribute('autocomplete', 'off');
         this.query = null;
 
-        d.on('input', this.element, event => {
+        this.element.addEventListener('input', event => {
             this.query = this.element.value || null;
 
             if (this.query) {
@@ -32,11 +25,11 @@ export class Suggestions {
 
         let currValue;
 
-        d.on('focus', this.element, event => {
+        this.element.addEventListener('focus', event => {
             currValue = this.element.value;
         });
 
-        d.on('keydown', this.element, event => {
+        this.element.addEventListener('keydown', event => {
             const code = event.code || keys[event.keyCode];
 
             switch (code) {
@@ -76,7 +69,7 @@ export class Suggestions {
             }
         });
 
-        d.delegate('click', this.source.element, 'li', (e, target) => {
+        delegate(this.source.element, 'click', 'li', (e, target) => {
             const item = this.source.getByElement(target);
 
             if (item) {
@@ -116,7 +109,28 @@ export class Suggestions {
     }
 
     destroy() {
-        d.off('input focus keydown', this.element);
+        this.element.removeEventListener('input');
+        this.element.removeEventListener('focus');
+        this.element.removeEventListener('keydown');
         this.source.destroy();
     }
+}
+
+function delegate(context, event, selector, callback) {
+    context.addEventListener(
+        event,
+        function(event) {
+            for (
+                let target = event.target;
+                target && target != this;
+                target = target.parentNode
+            ) {
+                if (target.matches(selector)) {
+                    callback.call(target, event, target);
+                    break;
+                }
+            }
+        },
+        true
+    );
 }

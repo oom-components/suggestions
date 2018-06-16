@@ -1,7 +1,4 @@
-import d from 'd_js';
-import Source from './Source.js';
-import Suggestion from './Suggestion.js';
-import Group from './Group.js';
+import Source from './source.js';
 
 export default class DatalistSource extends Source {
     constructor(input, settings = {}) {
@@ -32,11 +29,20 @@ export default class DatalistSource extends Source {
 function getAvailableOptions(element) {
     const data = [];
 
-    d.getAll({ optgroup: element }).forEach(optgroup => {
+    element.querySelectorAll('optgroup').forEach(optgroup => {
         const options = [];
-        d
-            .getAll({ option: optgroup })
-            .forEach(option => options.push(createItem(option)));
+
+        optgroup.querySelectorAll('option').forEach(option =>
+            options.push(
+                Object.assign(
+                    {
+                        label: option.label,
+                        value: option.value
+                    },
+                    option.dataset
+                )
+            )
+        );
 
         data.push({
             label: optgroup.label,
@@ -44,19 +50,19 @@ function getAvailableOptions(element) {
         });
     });
 
-    d.getAll({ option: element }).forEach(option => {
+    element.querySelectorAll('option').forEach(option => {
         if (option.parentElement.tagName !== 'OPTGROUP') {
-            data.push(createItem(option));
+            data.push(
+                Object.assign(
+                    {
+                        label: option.label,
+                        value: option.value
+                    },
+                    option.dataset
+                )
+            );
         }
     });
 
     return data;
-}
-
-function createItem(option) {
-    const item = d.data(option);
-    item.label = option.label;
-    item.value = option.value;
-
-    return item;
 }
