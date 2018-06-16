@@ -26,21 +26,8 @@ export default class AjaxSource extends Source {
         }
 
         this.timeout = setTimeout(() => {
-            fetch(this.endpoint + '?q=' + query, {
-                headers: {
-                    Accept: 'application/json'
-                }
-            })
-                .then(res => {
-                    if (res.status < 200 || res.status >= 400) {
-                        throw new Error(
-                            `The request status code is ${res.status}`
-                        );
-                    }
-
-                    return res;
-                })
-                .then(res => res.json())
+            getJson(this.endpoint + '?q=' + query)
+                .catch(err => console.error(err))
                 .then(data => {
                     this.load(data);
                     this.cache[query] = this.data;
@@ -59,4 +46,23 @@ export default class AjaxSource extends Source {
                 });
         }, 200);
     }
+}
+
+function getJson(url) {
+    return new Promise((resolve, reject) => {
+        const request = new XMLHttpRequest();
+
+        request.open('GET', url, true);
+        request.setRequestHeader('Accept', 'application/json');
+
+        request.onload = () => {
+            if (request.status >= 200 && request.status < 400) {
+                resolve(JSON.parse(request.responseText));
+            } else {
+                reject(`The request status code is ${request.status}`);
+            }
+        };
+
+        request.send();
+    });
 }
