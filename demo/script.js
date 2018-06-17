@@ -1,13 +1,13 @@
-import Suggestions from '../src/suggestions.js';
-import DatalistSource from '../src/datalist-source.js';
+import { Suggestions, Source, AjaxSource } from '../src/suggestions.js';
 
 const datalistInput = document.getElementById('input-datalist');
 
 const suggestions = new Suggestions(
     datalistInput,
-    new DatalistSource(datalistInput)
+    new AjaxSource('data.json', datalistInput.closest('fieldset'))
+    // Source.createFromElement(document.getElementById('colors'))
 );
 
-suggestions.on('select', function(value) {
-    console.log(this.query, value);
+datalistInput.addEventListener('suggestion:choosen', e => {
+    console.log(e.detail);
 });
