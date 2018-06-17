@@ -17,7 +17,7 @@ export default class Suggestions {
             this.query = this.element.value || null;
 
             if (this.query) {
-                this.source.refresh(this.query);
+                this.source.filter(this.query);
             } else {
                 this.source.close();
             }

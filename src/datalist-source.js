@@ -1,23 +1,16 @@
 import Source from './source.js';
 
 export default class DatalistSource extends Source {
-    constructor(input, settings = {}) {
+    constructor(input, parent) {
         const listElement = input.ownerDocument.getElementById(
             input.getAttribute('list')
         );
 
-        if (!settings.parent) {
-            settings.parent = listElement.parentElement;
-        }
-
-        super(settings);
+        input.removeAttribute('list');
+        super(getAvailableOptions(listElement), parent || listElement.parentElement);
 
         this.input = input;
         this.listId = input.getAttribute('list');
-
-        input.removeAttribute('list');
-
-        this.load(getAvailableOptions(listElement));
     }
 
     destroy() {

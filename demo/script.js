@@ -5,13 +5,7 @@ const datalistInput = document.getElementById('input-datalist');
 
 const suggestions = new Suggestions(
     datalistInput,
-    new DatalistSource(datalistInput, {
-        suggestions: {
-            render: option => {
-                return `<strong>${option.label}</strong>`;
-            }
-        }
-    })
+    new DatalistSource(datalistInput)
 );
 
 suggestions.on('select', function(value) {

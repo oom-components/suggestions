@@ -2,47 +2,42 @@
  * Class to manage an individual suggestion
  */
 class Suggestion {
-    constructor(data, settings = {}, group) {
+    static create(data, parent) {
+        return new Suggestion(data, parent);
+    }
+
+    constructor(data, parent) {
         this.data = data;
-        this.group = group;
-        this.value = settings.value ? data[settings.value] : data.value;
         this.search = data.search;
-        this.label = settings.label
-            ? data[settings.label]
-            : data.label || this.value;
+        this.label = data.label;
+        this.value = data.value;
+        this.parent = parent;
+        this.element = this.render();
+    }
 
-        //Render
-        this.element = document.createElement('li');
+    render() {
+        const element = document.createElement('li');
+        element.innerHTML = this.label;
 
-        if (typeof settings.render === 'function') {
-            this.element.innerHTML = settings.render(this);
+        return element;
+    }
+
+    refresh(filter) {
+        this.unselect();
+
+        if (filter(this)) {
+            this.parent.appendChild(this.element);
         } else {
-            this.element.innerHTML = this.data.label || this.value;
+            this.element.remove();
         }
     }
 
-    refresh(parent, query, selected) {
-        if (this.match(query)) {
-            parent.append(this.element);
-            this.unselect();
-            selected.push(this);
-        } else {
-            if (this.element.parentElement === parent) {
-                this.element.remove();
-            }
-        }
-    }
-
-    detach() {
-        this.element.remove();
-    }
-
-    scroll(parent, scrollGroup) {
+    scroll(scrollGroup) {
         let rect = this.element.getBoundingClientRect();
-        const parentRect = parent.getBoundingClientRect();
+        const parentRect = this.parent.getBoundingClientRect();
 
         if (parentRect.top - rect.top > 0) {
-            parent.scrollTop -= parentRect.top - rect.top;
+            this.parent.scrollTop -= parentRect.top - rect.top;
         } else if (parentRect.bottom < rect.bottom) {
             this.element.scrollIntoView(false);
         }
@@ -51,7 +46,7 @@ class Suggestion {
             rect = this.group.wrapperElement.getBoundingClientRect();
 
             if (parentRect.top - rect.top > 0) {
-                parent.scrollTop -= parentRect.top - rect.top;
+                this.parent.scrollTop -= parentRect.top - rect.top;
             }
         }
     }
@@ -69,99 +64,77 @@ class Suggestion {
  * Class to group suggestions
  */
 class Group {
-    constructor(data, settings = {}) {
+    static create(data, parent) {
+        const group = new Group(data, parent);
+
+        if (data.options) {
+            data.options.forEach(option => group.addSuggestion(Suggestion.create(option)));
+        }
+        
+        return group;
+    }
+
+    constructor(data, parent) {
         this.data = data;
-        this.label = settings.label ? data[settings.label] : data.label;
-
-        this.element = document.createElement('ul');
-        this.wrapperElement = document.createElement('li');
-        this.wrapperElement.innerHTML = `<strong>${this.label}</strong>`;
-        this.wrapperElement.append(this.element);
+        this.label = data.label;
+        this.parent = parent;
+        this.element = this.render();
+        this.suggestions = [];
     }
 
-    load(data) {
-        this.element.innerHTML = '';
-        this.data = data;
+    addSuggestion(suggestion) {
+        suggestion.parent = this.parent.content;
+        this.suggestions.push(suggestion);
     }
 
-    append(child) {
-        this.element.append(child);
+    render() {
+        const container = document.createElement('li');
+        const content = document.createElement('ul');
+
+        container.innerHTML = `<strong>${this.label}</strong>`;
+        container.appendChild(content);
+
+        return {container, content};
     }
 
-    refresh(parent, query, selected) {
-        const [element, ul] = this.element;
+    refresh(filter) {
+        this.suggestions.forEach(suggestion => suggestion.refresh(filter));
 
-        this.data.forEach(suggestion =>
-            suggestion.refresh(ul, query, selected)
-        );
-
-        if (ul.childElementCount) {
-            if (element.parentElement !== parent) {
-                parent.append(element);
-            }
-        } else if (element.parentElement === parent) {
-            element.remove();
+        if (this.element.content.childElementCount) {
+            this.parent.appendChild(this.element.container);
+        } else {
+            this.element.container.remove();
         }
     }
 }
 
 export default class Source {
-    constructor(settings = {}) {
-        this.settings = settings;
-        this.settings.groups = this.settings.groups || {};
-        this.settings.suggestions = this.settings.suggestions || {};
-
-        this.suggestions = {};
-        this.groups = {};
+    constructor(data, parent = document.body) {
         this.isClosed = true;
+        this.suggestions = [];
         this.result = [];
         this.current = 0;
 
-        this.element = document.createElement('ul');
-        (this.settings.parent || document.body).append(this.element);
+        this.element = this.render();
+        parent.appendChild(this.element);
+
+        if (data) {
+            this.load(data);
+        }
 
         delegate(this.element, 'mouseenter', 'li', (e, target) => {
             this.selectByElement(target);
         });
     }
 
-    getSuggestion(item, group) {
-        const key = item[this.settings.suggestions.value || 'value'];
-
-        if (this.suggestions[key]) {
-            return this.suggestions[key];
-        }
-
-        return (this.suggestions[key] = new Suggestion(
-            item,
-            this.settings.suggestions,
-            group
-        ));
+    render() {
+        return document.createElement('ul');
     }
 
-    getGroup(item) {
-        const key = item[this.settings.groups.label || 'label'];
-
-        if (!this.groups[key]) {
-            this.groups[key] = new Group(item, this.settings.groups);
-        }
-
-        const group = this.groups[key];
-
-        group.load(item.options.map(item => this.getSuggestion(item, group)));
-
-        return group;
-    }
-
-    load(data) {
-        this.data = data.map(
-            item =>
-                item.options ? this.getGroup(item) : this.getSuggestion(item)
+    load(options) {
+        this.suggestions = options.map(option => 
+            option.options ? Group.create(option, this.element) : Suggestion.create(option, this.element)
         );
-    }
-
-    append(child) {
-        this.element.appendChild(child);
     }
 
     selectFirst() {
@@ -255,7 +228,17 @@ export default class Source {
         });
     }
 
-    refresh(query) {
+    refresh(filter) {
+        this.suggestions.forEach(suggestion => suggestion.refresh(filter));
+
+        if (this.element.childElementCount) {
+            this.open();
+        } else {
+            this.close();
+        }
+    }
+
+    filter(query) {
         query = cleanString(query);
 
         if (!query.length) {
@@ -264,7 +247,7 @@ export default class Source {
 
         query = query.split(' ');
 
-        this.update(suggestion => {
+        this.refresh(suggestion => {
             if (!suggestion.search) {
                 suggestion.search = cleanString(
                     suggestion.label + suggestion.value
