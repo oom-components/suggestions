@@ -27,14 +27,17 @@ Let's start with the following html code:
 ```html
 <form>
     <label>
-        <input type="text" name="name" list="names" id="name-input">
+        Name: <input type="text" name="name" list="names" id="name-input">
     </label>
+
     <datalist id="names">
         <option value="ivan">Ivan</option>
         <option value="pablo">Pablo</option>
         <option value="maria">María</option>
         <option value="alejandro">Alejandro</option>
     </datalist>
+
+    <button type="submit">Send</button>
 </form>
 ```
 
@@ -43,14 +46,42 @@ Let's start with the following html code:
 Use javascript for a complete experience:
 
 ```js
-import Suggestions from './suggestions.js';
-import DatalistSource from './datalist-source.js';
+import { Suggestions, Source } from './suggestions.js';
 
-//Get the input
 const input = document.getElementById('name-input');
+const datalist = document.getElementById('names');
 
-//Generate the available results from the related <datalist>
-const source = new DatalistSource(input);
+//Generate the available results from the <datalist>
+const source = Source.createFromElement(datalist);
+
+//Generate the suggestions joining the input and the source values
+const suggestions = new Suggestions(input, source);
+```
+
+## Use with AJAX
+
+Create a search form:
+
+```html
+<form>
+    <label>
+        Search: <input type="search" name="q" id="search">
+    </label>
+
+    <button type="submit">Search</button>
+</form>
+```
+
+Instead `Source`, use the `AjaxSource` class:
+
+```js
+import { Suggestions, AjaxSource } from './suggestions.js';
+
+const input = document.getElementById('name-input');
+const datalist = document.getElementById('names');
+
+//Generate the api connection
+const source = new AjaxSource('/api/search.json');
 
 //Generate the suggestions joining the input and the source values
 const suggestions = new Suggestions(input, source);
