@@ -3,17 +3,9 @@
  * ------------------------
  */
 export class Suggestion {
-    static create(data, parent) {
-        return new Suggestion(data, parent);
-    }
-
     constructor(data, parent) {
         this.data = data;
-        this.search = data.search;
-        this.label = data.label;
-        this.value = data.value;
         this.parent = parent;
-
         this.element = document.createElement('li');
         this.render(this.element);
 
@@ -41,7 +33,7 @@ export class Suggestion {
     }
 
     render(element) {
-        element.innerHTML = this.label;
+        element.innerHTML = this.data.label;
     }
 
     refresh(result, filter) {
@@ -52,25 +44,6 @@ export class Suggestion {
             result.push(this);
         } else {
             this.element.remove();
-        }
-    }
-
-    scroll(scrollGroup) {
-        let rect = this.element.getBoundingClientRect();
-        const parentRect = this.parent.getBoundingClientRect();
-
-        if (parentRect.top - rect.top > 0) {
-            this.parent.scrollTop -= parentRect.top - rect.top;
-        } else if (parentRect.bottom < rect.bottom) {
-            this.element.scrollIntoView(false);
-        }
-
-        if (scrollGroup && this.group && !this.element.previousElementSibling) {
-            rect = this.group.wrapperElement.getBoundingClientRect();
-
-            if (parentRect.top - rect.top > 0) {
-                this.parent.scrollTop -= parentRect.top - rect.top;
-            }
         }
     }
 
@@ -93,45 +66,68 @@ export class Suggestion {
             })
         );
     }
+
+    scroll(scrollGroup) {
+        let rect = this.element.getBoundingClientRect();
+        const parentRect = this.parent.getBoundingClientRect();
+
+        if (parentRect.top - rect.top > 0) {
+            this.parent.scrollTop -= parentRect.top - rect.top;
+        } else if (parentRect.bottom < rect.bottom) {
+            this.element.scrollIntoView(false);
+        }
+
+        if (scrollGroup && this.group && !this.element.previousElementSibling) {
+            rect = this.group.wrapperElement.getBoundingClientRect();
+
+            if (parentRect.top - rect.top > 0) {
+                this.parent.scrollTop -= parentRect.top - rect.top;
+            }
+        }
+    }
 }
 
 /**
- * Suggestions groups
- * ------------------
+ * A group of suggestions
+ * ----------------------
  */
 export class Group {
-    static create(data, parent) {
-        const group = new Group(data, parent);
-
-        if (data.options) {
-            data.options.forEach(option =>
-                group.addSuggestion(Suggestion.create(option))
-            );
-        }
-
-        return group;
-    }
-
     constructor(data, parent) {
         this.data = data;
-        this.label = data.label;
         this.parent = parent;
         this.suggestions = [];
+        this.cache = {};
 
         this.element = document.createElement('li');
         this.contentElement = document.createElement('ul');
 
         this.render(this.element);
         this.element.appendChild(this.contentElement);
+
+        if (data.options) {
+            this.load(data.options);
+        }
     }
 
-    addSuggestion(suggestion) {
-        suggestion.parent = this.contentElement;
-        this.suggestions.push(suggestion);
+    load(data) {
+        this.contentElement.innerHTML = '';
+        this.suggestions = data.map(d => this.loadSuggestion(d));
+    }
+
+    loadSuggestion(data) {
+        if (!this.cache[data.value]) {
+            this.cache[data.value] = this.createSuggestion(data, this.contentElement);
+        }
+
+        return this.cache[data.value];
+    }
+
+    createSuggestion(data, parent) {
+        return new Suggestion(data, parent);
     }
 
     render(element) {
-        element.innerHTML = `<strong>${this.label}</strong>`;
+        element.innerHTML = `<strong>${this.data.label}</strong>`;
     }
 
     refresh(result, filter) {
@@ -161,18 +157,18 @@ export class Source {
         );
     }
 
-    constructor(data, parent = document.body) {
+    constructor(parent = document.body) {
         this.closed = true;
+        this.cache = {
+            groups: {},
+            suggestions: {},
+        };
         this.data = [];
         this.suggestions = [];
         this.selectedKey = 0;
 
         this.element = this.render();
         parent.appendChild(this.element);
-
-        if (data) {
-            this.load(data);
-        }
 
         this.element.addEventListener('suggestion:hover', e => {
             this.select(
@@ -203,14 +199,43 @@ export class Source {
         return document.createElement('ul');
     }
 
-    createSuggestion(option) {
-        return option.options
-            ? Group.create(option, this.element)
-            : Suggestion.create(option, this.element);
+    createSuggestion(data, parent) {
+        return new Suggestion(data, parent);
     }
 
-    load(options) {
-        this.data = options.map(option => this.createSuggestion(option));
+    createGroup(data, parent) {
+        return new Group(data, parent);
+    }
+
+    load(data) {
+        this.element.innerHTML = '';
+        this.data = data.map(data => {
+            if ('options' in data) {
+                const cache = this.cache.groups;
+
+                if (!cache[data.label]) {
+                    cache[data.label] = this.createGroup(data, this.element);
+                } else {
+                    cache[data.label].load(data.options);
+                }
+
+                return cache[data.label];
+            }
+
+            const cache = this.cache.suggestions;
+
+            if (!cache[data.value]) {
+                cache[data.value] = this.createSuggestion(data, this.element);
+            }
+
+            return cache[data.value];
+        });
+
+        if (this.query) {
+            this.filter(this.query, false);
+        }
+
+        return this;
     }
 
     refresh(filter) {
@@ -228,6 +253,8 @@ export class Source {
         if (!this.current) {
             this.selectFirst();
         }
+
+        return this;
     }
 
     select(key) {
@@ -240,24 +267,28 @@ export class Source {
             this.suggestions[key].scroll(this.element);
             this.selectedKey = key;
         }
+
+        return this;
     }
 
     selectFirst() {
-        this.select(0);
+        return this.select(0);
     }
 
     selectNext() {
-        this.select(this.selectedKey + 1);
+        return this.select(this.selectedKey + 1);
     }
 
     selectPrevious() {
-        this.select(this.selectedKey - 1);
+        return this.select(this.selectedKey - 1);
     }
 
     close() {
         this.closed = true;
         this.element.classList.remove('is-open');
         this.element.dispatchEvent(new CustomEvent('suggestions:close'));
+
+        return this;
     }
 
     open() {
@@ -265,6 +296,8 @@ export class Source {
         this.element.classList.add('is-open');
         this.element.dispatchEvent(new CustomEvent('suggestions:open'));
         this.current && this.current.select();
+
+        return this;
     }
 
     filter(query, clean = true) {
@@ -274,21 +307,26 @@ export class Source {
             return this.close();
         }
 
+        this.query = query;
         query = query.split(' ');
 
         this.refresh(suggestion => {
             if (!suggestion.search) {
                 suggestion.search = cleanString(
-                    suggestion.label + suggestion.value
+                    `${suggestion.data.label} ${suggestion.data.value}`
                 );
             }
 
             return query.every(q => suggestion.search.indexOf(q) !== -1);
         });
+
+        return this;
     }
 
     destroy() {
         this.element.remove();
+
+        return this;
     }
 }
 
@@ -298,32 +336,12 @@ export class Source {
  */
 export class AjaxSource extends Source {
     constructor(endpoint, parent) {
-        super(null, parent);
+        super(parent);
         this.endpoint = endpoint;
         this.cache = {
             groups: {},
             suggestions: {}
         };
-    }
-
-    createSuggestion(option) {
-        if (option.options) {
-            const key = option.label;
-
-            if (!(key in this.cache.groups)) {
-                this.cache.groups[key] = super.createSuggestion(option);
-            }
-
-            return this.cache.groups[key];
-        }
-
-        const key = option.value;
-
-        if (!(key in this.cache.suggestions)) {
-            this.cache.suggestions[key] = super.createSuggestion(option);
-        }
-
-        return this.cache.suggestions[key];
     }
 
     filter(query, clean = false) {
@@ -333,20 +351,21 @@ export class AjaxSource extends Source {
             return this.close();
         }
 
+        if (this.query === query) {
+            return this.refresh(() => true);
+        }
+
+        this.query = query;
+
         if (!this.waiting) {
             return this.loadData(query)
                 .then(() => this.refresh(() => true))
                 .then(() => {
-                    if (this.queryQeue && this.queryQeue !== query) {
-                        query = this.queryQeue;
-                        delete this.queryQeue;
-
-                        this.filter(query);
+                    if (this.query && this.query !== query) {
+                        this.filter(this.query);
                     }
                 });
         }
-
-        this.queryQeue = query;
     }
 
     loadData(query) {
@@ -383,13 +402,12 @@ export class Suggestions {
         this.element = element;
         this.element.setAttribute('autocomplete', 'off');
         this.element.removeAttribute('list');
-        this.query = null;
 
         this.element.addEventListener('input', event => {
-            this.query = this.element.value || null;
+            const query = this.element.value;
 
-            if (this.query) {
-                this.source.filter(this.query);
+            if (query) {
+                this.source.filter(query);
             } else {
                 this.source.close();
             }
@@ -417,7 +435,7 @@ export class Suggestions {
 
                     if (!this.source.closed) {
                         this.source.selectNext();
-                    } else if (this.query) {
+                    } else if (this.element.value) {
                         this.source.open();
                     }
                     break;
@@ -450,7 +468,7 @@ export class Suggestions {
     }
 
     select(suggestion) {
-        this.element.value = suggestion.label;
+        this.element.value = suggestion.data.value;
         this.element.dispatchEvent(
             new CustomEvent('suggestion:choosen', { detail: suggestion })
         );
