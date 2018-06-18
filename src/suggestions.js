@@ -116,7 +116,10 @@ export class Group {
 
     loadSuggestion(data) {
         if (!this.cache[data.value]) {
-            this.cache[data.value] = this.createSuggestion(data, this.contentElement);
+            this.cache[data.value] = this.createSuggestion(
+                data,
+                this.contentElement
+            );
         }
 
         return this.cache[data.value];
@@ -151,9 +154,8 @@ export class Group {
 export class Source {
     //Create a source from a <datalist> or <select> element
     static createFromElement(options, parent) {
-        return new Source(
-            getOptionsFromElement(options),
-            parent || options.parentElement
+        return new Source(parent || options.parentElement).load(
+            getOptionsFromElement(options)
         );
     }
 
@@ -161,7 +163,7 @@ export class Source {
         this.closed = true;
         this.cache = {
             groups: {},
-            suggestions: {},
+            suggestions: {}
         };
         this.data = [];
         this.suggestions = [];
@@ -358,7 +360,7 @@ export class AjaxSource extends Source {
         this.query = query;
 
         if (!this.waiting) {
-            return this.loadData(query)
+            this.loadData(query)
                 .then(() => this.refresh(() => true))
                 .then(() => {
                     if (this.query && this.query !== query) {
@@ -366,11 +368,13 @@ export class AjaxSource extends Source {
                     }
                 });
         }
+
+        return this;
     }
 
     loadData(query) {
         if (this.cache[query]) {
-            this.data = this.cache[query];
+            this.load(this.cache[query]);
             return Promise.resolve();
         }
 
@@ -379,8 +383,8 @@ export class AjaxSource extends Source {
         return getJson(this.endpoint + '?q=' + query)
             .catch(err => console.error(err))
             .then(data => {
+                this.cache[query] = data;
                 this.load(data);
-                this.cache[query] = this.data;
 
                 return new Promise(resolve =>
                     setTimeout(() => {
