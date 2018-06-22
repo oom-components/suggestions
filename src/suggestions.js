@@ -40,7 +40,7 @@ export class Suggestion {
         this.unselect();
 
         if (filter(this)) {
-            this.parent.appendChild(this.element);
+            this.parent.element.appendChild(this.element);
             result.push(this);
         } else {
             this.element.remove();
@@ -69,10 +69,10 @@ export class Suggestion {
 
     scroll(scrollGroup) {
         let rect = this.element.getBoundingClientRect();
-        const parentRect = this.parent.getBoundingClientRect();
+        const parentRect = this.parent.element.getBoundingClientRect();
 
         if (parentRect.top - rect.top > 0) {
-            this.parent.scrollTop -= parentRect.top - rect.top;
+            this.parent.element.scrollTop -= parentRect.top - rect.top;
         } else if (parentRect.bottom < rect.bottom) {
             this.element.scrollIntoView(false);
         }
@@ -81,7 +81,7 @@ export class Suggestion {
             rect = this.group.wrapperElement.getBoundingClientRect();
 
             if (parentRect.top - rect.top > 0) {
-                this.parent.scrollTop -= parentRect.top - rect.top;
+                this.parent.element.scrollTop -= parentRect.top - rect.top;
             }
         }
     }
@@ -98,11 +98,11 @@ export class Group {
         this.suggestions = [];
         this.cache = {};
 
-        this.element = document.createElement('li');
-        this.contentElement = document.createElement('ul');
+        this.wrapper = document.createElement('li');
+        this.element = document.createElement('ul');
 
-        this.render(this.element);
-        this.element.appendChild(this.contentElement);
+        this.render(this.wrapper);
+        this.wrapper.appendChild(this.element);
 
         if (data.options) {
             this.load(data.options);
@@ -110,23 +110,20 @@ export class Group {
     }
 
     load(data) {
-        this.contentElement.innerHTML = '';
+        this.element.innerHTML = '';
         this.suggestions = data.map(d => this.loadSuggestion(d));
     }
 
     loadSuggestion(data) {
         if (!this.cache[data.value]) {
-            this.cache[data.value] = this.createSuggestion(
-                data,
-                this.contentElement
-            );
+            this.cache[data.value] = this.createSuggestion(data, this.element);
         }
 
         return this.cache[data.value];
     }
 
-    createSuggestion(data, parent) {
-        return new Suggestion(data, parent);
+    createSuggestion(data) {
+        return new Suggestion(data, this);
     }
 
     render(element) {
@@ -138,10 +135,10 @@ export class Group {
             suggestion.refresh(result, filter)
         );
 
-        if (this.contentElement.childElementCount) {
-            this.parent.appendChild(this.element);
+        if (this.element.childElementCount) {
+            this.parent.element.appendChild(this.wrapper);
         } else {
-            this.element.remove();
+            this.wrapper.remove();
         }
     }
 }
@@ -201,12 +198,12 @@ export class Source {
         return document.createElement('ul');
     }
 
-    createSuggestion(data, parent) {
-        return new Suggestion(data, parent);
+    createSuggestion(data) {
+        return new Suggestion(data, this);
     }
 
-    createGroup(data, parent) {
-        return new Group(data, parent);
+    createGroup(data) {
+        return new Group(data, this);
     }
 
     load(data) {
@@ -364,7 +361,9 @@ export class AjaxSource extends Source {
                 .then(() => this.refresh(() => true))
                 .then(() => {
                     if (this.query && this.query !== query) {
-                        this.filter(this.query);
+                        query = this.query;
+                        delete this.query;
+                        this.filter(query);
                     }
                 });
         }
