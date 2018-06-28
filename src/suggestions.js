@@ -28,8 +28,8 @@ export class Suggestion {
         });
     }
 
-    get selected() {
-        return this.element.classList.contains('is-selected');
+    get focused() {
+        return this.element.classList.contains('is-focused');
     }
 
     render(element) {
@@ -37,7 +37,7 @@ export class Suggestion {
     }
 
     refresh(result, filter) {
-        this.unselect();
+        this.blur();
 
         if (filter(this)) {
             this.parent.element.appendChild(this.element);
@@ -47,41 +47,70 @@ export class Suggestion {
         }
     }
 
-    select() {
-        this.element.classList.add('is-selected');
+    focus() {
+        this.element.classList.add('is-focused');
         this.element.dispatchEvent(
-            new CustomEvent('suggestion:select', {
+            new CustomEvent('suggestion:focus', {
                 detail: this,
                 bubbles: true
             })
         );
     }
 
-    unselect() {
-        this.element.classList.remove('is-selected');
+    blur() {
+        this.element.classList.remove('is-focused');
         this.element.dispatchEvent(
-            new CustomEvent('suggestion:unselect', {
+            new CustomEvent('suggestion:blur', {
                 detail: this,
                 bubbles: true
             })
         );
     }
 
-    scroll(scrollGroup) {
-        let rect = this.element.getBoundingClientRect();
-        const parentRect = this.parent.element.getBoundingClientRect();
+    scroll() {
+        let scroll;
 
-        if (parentRect.top - rect.top > 0) {
-            this.parent.element.scrollTop -= parentRect.top - rect.top;
-        } else if (parentRect.bottom < rect.bottom) {
-            this.element.scrollIntoView(false);
+        //Is in a group
+        if (this.parent.wrapper) {
+            let rectTop, rectBottom;
+            const viewbox = this.parent.parent.element.getBoundingClientRect();
+
+            //Is the first element of the group
+            if (!this.element.previousElementSibling) {
+                rectTop = this.parent.wrapper.getBoundingClientRect();
+                rectBottom = this.element.getBoundingClientRect();
+            } else {
+                rectBottom = rectTop = this.element.getBoundingClientRect();
+            }
+
+            if (viewbox.top - rectTop.top > 0) {
+                scroll = this.element.previousElementSibling
+                    ? 'start'
+                    : 'center';
+            } else if (viewbox.bottom < rectBottom.bottom) {
+                scroll = this.element.nextElementSibling ? 'end' : 'center';
+            }
+        } else {
+            const viewbox = this.parent.element.getBoundingClientRect();
+            const rect = this.element.getBoundingClientRect();
+
+            if (viewbox.top - rect.top > 0) {
+                scroll = this.element.previousElementSibling
+                    ? 'start'
+                    : 'center';
+            } else if (viewbox.bottom < rect.bottom) {
+                scroll = this.element.previousElementSibling ? 'end' : 'center';
+            }
         }
 
-        if (scrollGroup && this.group && !this.element.previousElementSibling) {
-            rect = this.group.wrapperElement.getBoundingClientRect();
-
-            if (parentRect.top - rect.top > 0) {
-                this.parent.element.scrollTop -= parentRect.top - rect.top;
+        if (scroll) {
+            try {
+                this.element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: scroll
+                });
+            } catch (err) {
+                this.element.scrollIntoView();
             }
         }
     }
@@ -144,14 +173,13 @@ export class Group {
 }
 
 /**
- * Manage a data source
- * (groups and suggestions)
- * ------------------------
+ * Suggestions
+ * -----------
  */
-export class Source {
-    //Create a source from a <datalist> or <select> element
+export class Suggestions {
+    //Create from a <datalist> or <select> element
     static createFromElement(options, parent) {
-        return new Source(parent || options.parentElement).load(
+        return new Suggestions(parent || options.parentElement).load(
             getOptionsFromElement(options)
         );
     }
@@ -164,13 +192,13 @@ export class Source {
         };
         this.data = [];
         this.suggestions = [];
-        this.selectedKey = 0;
+        this.focusedIndex = 0;
 
         this.element = this.render();
         parent.appendChild(this.element);
 
         this.element.addEventListener('suggestion:hover', e => {
-            this.select(
+            this.focus(
                 this.suggestions.findIndex(
                     suggestion => suggestion === e.detail
                 )
@@ -178,7 +206,7 @@ export class Source {
         });
 
         this.element.addEventListener('suggestion:click', e => {
-            this.select(
+            this.focus(
                 this.suggestions.findIndex(
                     suggestion => suggestion === e.detail
                 )
@@ -186,12 +214,81 @@ export class Source {
         });
     }
 
-    get current() {
-        const curr = this.suggestions[this.selectedKey];
+    get focused() {
+        const curr = this.suggestions[this.focusedIndex];
 
-        if (curr && curr.selected) {
+        if (curr && curr.focused) {
             return curr;
         }
+    }
+
+    attachInput(input) {
+        this.input = input;
+        this.input.setAttribute('autocomplete', 'off');
+        this.input.removeAttribute('list');
+
+        this.input.addEventListener('input', event => {
+            const query = this.input.value;
+
+            if (query) {
+                this.filter(query);
+            } else {
+                this.close();
+            }
+        });
+
+        let currValue;
+
+        this.input.addEventListener('focus', event => {
+            currValue = this.input.value;
+        });
+
+        const keys = {
+            40: 'ArrowDown',
+            38: 'ArrowUp',
+            13: 'Enter',
+            27: 'Escape'
+        };
+
+        this.input.addEventListener('keydown', event => {
+            const code = event.code || keys[event.keyCode];
+
+            switch (code) {
+                case 'ArrowDown':
+                    event.preventDefault();
+
+                    if (!this.closed) {
+                        this.focus(this.focusedIndex + 1);
+                    } else if (this.element.value) {
+                        this.open();
+                    }
+                    break;
+
+                case 'ArrowUp':
+                    event.preventDefault();
+
+                    if (!this.closed) {
+                        this.focus(this.focusedIndex - 1);
+                    }
+                    break;
+
+                case 'Enter':
+                    if (!this.closed) {
+                        this.select(this.focused);
+                        event.preventDefault();
+                    }
+                    break;
+
+                case 'Escape':
+                    this.close();
+                    this.element.value = currValue;
+                    break;
+            }
+        });
+
+        this.element.addEventListener('suggestion:click', e =>
+            this.select(e.detail)
+        );
     }
 
     render() {
@@ -243,49 +340,46 @@ export class Source {
             suggestion.refresh(this.suggestions, filter)
         );
 
-        if (this.element.childElementCount) {
-            this.open();
-        } else {
-            this.close();
+        if (!this.element.childElementCount) {
+            return this.close();
         }
 
-        if (!this.current) {
-            this.selectFirst();
-        }
+        this.open();
+        this.input.dispatchEvent(new CustomEvent('suggestions:refresh'));
 
         return this;
     }
 
-    select(key) {
-        if (this.suggestions[key]) {
-            if (this.suggestions[this.selectedKey]) {
-                this.suggestions[this.selectedKey].unselect();
+    focus(index) {
+        if (this.suggestions[index]) {
+            if (this.suggestions[this.focusedIndex]) {
+                this.suggestions[this.focusedIndex].blur();
             }
 
-            this.suggestions[key].select();
-            this.suggestions[key].scroll(this.element);
-            this.selectedKey = key;
+            this.suggestions[index].focus();
+            this.focusedIndex = index;
+
+            if (!this.closed) {
+                this.suggestions[index].scroll();
+            }
         }
 
         return this;
     }
 
-    selectFirst() {
-        return this.select(0);
-    }
+    select(suggestion) {
+        this.input.value = suggestion.data.value;
+        this.input.dispatchEvent(
+            new CustomEvent('suggestions:select', { detail: suggestion })
+        );
 
-    selectNext() {
-        return this.select(this.selectedKey + 1);
-    }
-
-    selectPrevious() {
-        return this.select(this.selectedKey - 1);
+        return this.close();
     }
 
     close() {
         this.closed = true;
         this.element.classList.remove('is-open');
-        this.element.dispatchEvent(new CustomEvent('suggestions:close'));
+        this.input.dispatchEvent(new CustomEvent('suggestions:close'));
 
         return this;
     }
@@ -293,8 +387,8 @@ export class Source {
     open() {
         this.closed = false;
         this.element.classList.add('is-open');
-        this.element.dispatchEvent(new CustomEvent('suggestions:open'));
-        this.current && this.current.select();
+        this.input.dispatchEvent(new CustomEvent('suggestions:open'));
+        this.focused ? this.focused.focus() : this.focus(0);
 
         return this;
     }
@@ -323,6 +417,9 @@ export class Source {
     }
 
     destroy() {
+        this.input.removeEventListener('input');
+        this.input.removeEventListener('focus');
+        this.input.removeEventListener('keydown');
         this.element.remove();
 
         return this;
@@ -330,10 +427,10 @@ export class Source {
 }
 
 /**
- * Create a Source that loads data with ajax
+ * Create Suggestions loading data with ajax
  * -----------------------------------------
  */
-export class AjaxSource extends Source {
+export class AjaxSuggestions extends Suggestions {
     constructor(endpoint, parent) {
         super(parent);
         this.endpoint = endpoint;
@@ -392,97 +489,6 @@ export class AjaxSource extends Source {
                     }, 200)
                 );
             });
-    }
-}
-
-/**
- * Join an input element with suggestions source
- * ---------------------------------------------
- */
-export class Suggestions {
-    constructor(element, source) {
-        this.source = source;
-        this.element = element;
-        this.element.setAttribute('autocomplete', 'off');
-        this.element.removeAttribute('list');
-
-        this.element.addEventListener('input', event => {
-            const query = this.element.value;
-
-            if (query) {
-                this.source.filter(query);
-            } else {
-                this.source.close();
-            }
-        });
-
-        let currValue;
-
-        this.element.addEventListener('focus', event => {
-            currValue = this.element.value;
-        });
-
-        const keys = {
-            40: 'ArrowDown',
-            38: 'ArrowUp',
-            13: 'Enter',
-            27: 'Escape'
-        };
-
-        this.element.addEventListener('keydown', event => {
-            const code = event.code || keys[event.keyCode];
-
-            switch (code) {
-                case 'ArrowDown':
-                    event.preventDefault();
-
-                    if (!this.source.closed) {
-                        this.source.selectNext();
-                    } else if (this.element.value) {
-                        this.source.open();
-                    }
-                    break;
-
-                case 'ArrowUp':
-                    event.preventDefault();
-
-                    if (!this.source.closed) {
-                        this.source.selectPrevious();
-                    }
-                    break;
-
-                case 'Enter':
-                    if (!this.source.closed) {
-                        this.select(this.source.current);
-                        event.preventDefault();
-                    }
-                    break;
-
-                case 'Escape':
-                    this.source.close();
-                    this.element.value = currValue;
-                    break;
-            }
-        });
-
-        this.source.element.addEventListener('suggestion:click', e => {
-            this.select(e.detail);
-        });
-    }
-
-    select(suggestion) {
-        this.element.value = suggestion.data.value;
-        this.element.dispatchEvent(
-            new CustomEvent('suggestion:choosen', { detail: suggestion })
-        );
-        this.source.close();
-    }
-
-    destroy() {
-        this.element.removeEventListener('input');
-        this.element.removeEventListener('focus');
-        this.element.removeEventListener('keydown');
-        this.source.destroy();
     }
 }
 

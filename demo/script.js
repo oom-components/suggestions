@@ -1,12 +1,13 @@
-import { Suggestions, Source, AjaxSource } from '../src/suggestions.js';
+import { Suggestions, AjaxSuggestions } from '../src/suggestions.js';
 
 const datalistInput = document.getElementById('input-datalist');
-const source = Source.createFromElement(document.getElementById('colors'));
-const ajax = new AjaxSource('data.json', datalistInput.closest('fieldset'));
 
-const suggestions = new Suggestions(datalistInput, source);
+const suggestions = Suggestions.createFromElement(document.getElementById('colors'));
+//const suggestions = new AjaxSuggestions('data.json', datalistInput.closest('fieldset'));
 
-datalistInput.addEventListener('suggestion:choosen', e => {
+suggestions.attachInput(datalistInput);
+
+datalistInput.addEventListener('suggestions:select', e => {
     console.log(e.detail);
 });
 
