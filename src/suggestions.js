@@ -176,7 +176,7 @@ export class Group {
  * Suggestions
  * -----------
  */
-export class Suggestions {
+export class Suggestions extends HTMLElement {
     //Create from a <datalist> or <select> element
     static createFromElement(options, parent) {
         return new Suggestions(parent || options.parentElement).load(
@@ -184,7 +184,8 @@ export class Suggestions {
         );
     }
 
-    constructor(parent = document.body) {
+    constructor() {
+        super();
         this.closed = true;
         this.cache = {
             groups: {},
@@ -193,25 +194,6 @@ export class Suggestions {
         this.data = [];
         this.suggestions = [];
         this.focusedIndex = 0;
-
-        this.element = this.render();
-        parent.appendChild(this.element);
-
-        this.element.addEventListener('suggestion:hover', e => {
-            this.focus(
-                this.suggestions.findIndex(
-                    suggestion => suggestion === e.detail
-                )
-            );
-        });
-
-        this.element.addEventListener('suggestion:click', e => {
-            this.focus(
-                this.suggestions.findIndex(
-                    suggestion => suggestion === e.detail
-                )
-            );
-        });
     }
 
     get focused() {
@@ -222,8 +204,8 @@ export class Suggestions {
         }
     }
 
-    attachInput(input) {
-        this.input = input;
+    connectedCallback() {
+        this.input = this.ownerDocument.getElementById(this.getAttribute('for'));
         this.input.setAttribute('autocomplete', 'off');
         this.input.removeAttribute('list');
 
@@ -259,7 +241,7 @@ export class Suggestions {
 
                     if (!this.closed) {
                         this.focus(this.focusedIndex + 1);
-                    } else if (this.element.value) {
+                    } else if (this.input.value) {
                         this.open();
                     }
                     break;
@@ -281,18 +263,30 @@ export class Suggestions {
 
                 case 'Escape':
                     this.close();
-                    this.element.value = currValue;
+                    this.input.value = currValue;
                     break;
             }
         });
 
-        this.element.addEventListener('suggestion:click', e =>
+        this.addEventListener('suggestion:click', e =>
             this.select(e.detail)
         );
-    }
 
-    render() {
-        return document.createElement('ul');
+        this.addEventListener('suggestion:hover', e => {
+            this.focus(
+                this.suggestions.findIndex(
+                    suggestion => suggestion === e.detail
+                )
+            );
+        });
+
+        this.addEventListener('suggestion:click', e => {
+            this.focus(
+                this.suggestions.findIndex(
+                    suggestion => suggestion === e.detail
+                )
+            );
+        });
     }
 
     createSuggestion(data) {
@@ -377,16 +371,14 @@ export class Suggestions {
     }
 
     close() {
-        this.closed = true;
-        this.element.classList.remove('is-open');
+        this.hidden = true;
         this.input.dispatchEvent(new CustomEvent('suggestions:close'));
 
         return this;
     }
 
     open() {
-        this.closed = false;
-        this.element.classList.add('is-open');
+        this.hidden = false;
         this.input.dispatchEvent(new CustomEvent('suggestions:open'));
         this.focused ? this.focused.focus() : this.focus(0);
 
@@ -412,15 +404,6 @@ export class Suggestions {
 
             return query.every(q => suggestion.search.indexOf(q) !== -1);
         });
-
-        return this;
-    }
-
-    destroy() {
-        this.input.removeEventListener('input');
-        this.input.removeEventListener('focus');
-        this.input.removeEventListener('keydown');
-        this.element.remove();
 
         return this;
     }
