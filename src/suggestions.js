@@ -298,13 +298,13 @@ export class Suggestions extends HTMLElement {
     }
 
     load(data) {
-        this.element.innerHTML = '';
+        this.innerHTML = '';
         this.data = data.map(data => {
             if ('options' in data) {
                 const cache = this.cache.groups;
 
                 if (!cache[data.label]) {
-                    cache[data.label] = this.createGroup(data, this.element);
+                    cache[data.label] = this.createGroup(data, this);
                 } else {
                     cache[data.label].load(data.options);
                 }
@@ -315,7 +315,7 @@ export class Suggestions extends HTMLElement {
             const cache = this.cache.suggestions;
 
             if (!cache[data.value]) {
-                cache[data.value] = this.createSuggestion(data, this.element);
+                cache[data.value] = this.createSuggestion(data, this);
             }
 
             return cache[data.value];
@@ -334,7 +334,7 @@ export class Suggestions extends HTMLElement {
             suggestion.refresh(this.suggestions, filter)
         );
 
-        if (!this.element.childElementCount) {
+        if (!this.childElementCount) {
             return this.close();
         }
 
