@@ -258,7 +258,11 @@ export class Suggestions {
                     event.preventDefault();
 
                     if (!this.closed) {
-                        this.focus(this.focusedIndex + 1);
+                        if (this.focusedIndex === undefined) {
+                            this.focus(0);
+                        } else {
+                            this.focus(this.focusedIndex + 1);
+                        }
                     } else if (this.element.value) {
                         this.open();
                     }
@@ -388,7 +392,12 @@ export class Suggestions {
         this.closed = false;
         this.element.classList.add('is-open');
         this.input.dispatchEvent(new CustomEvent('suggestions:open'));
-        this.focused ? this.focused.focus() : this.focus(0);
+
+        if (this.focused) {
+            this.focused.focus();
+        } else if (this.input.value) {
+            this.focus(0);
+        }
 
         return this;
     }
