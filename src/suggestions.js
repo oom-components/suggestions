@@ -10,6 +10,9 @@ export class Suggestion {
         this.render(this.element);
 
         this.element.addEventListener('mouseenter', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
             this.element.dispatchEvent(
                 new CustomEvent('suggestion:hover', {
                     detail: this,
@@ -19,6 +22,9 @@ export class Suggestion {
         });
 
         this.element.addEventListener('click', e => {
+            e.stopPropagation();
+            e.preventDefault();
+
             this.element.dispatchEvent(
                 new CustomEvent('suggestion:click', {
                     detail: this,
