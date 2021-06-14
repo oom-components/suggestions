@@ -421,7 +421,7 @@ export class Suggestions {
         this.refresh(suggestion => {
             if (!suggestion.search) {
                 suggestion.search = cleanString(
-                    `${suggestion.data.label} ${suggestion.data.value}`
+                    suggestion.data.search || `${suggestion.data.label} ${suggestion.data.value}`
                 );
             }
 
